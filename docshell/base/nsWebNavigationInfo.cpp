@@ -58,10 +58,11 @@ nsWebNavigationInfo::IsTypeSupported(const nsACString& aType,
 
   // As of FF 52, we only support flash and test plugins, so if the mime types
   // don't match for that, exit before we start loading plugins.
+/*
   if (!nsPluginHost::CanUsePluginForMIMEType(aType)) {
     return NS_OK;
   }
-
+*/
   // If this request is for a docShell that isn't going to allow plugins,
   // there's no need to try and find a plugin to handle it.
   nsCOMPtr<nsIDocShell> docShell(do_QueryInterface(aWebNav));

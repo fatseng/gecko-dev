@@ -79,7 +79,8 @@ class nsFrameLoader final : public nsIFrameLoader,
 public:
   static nsFrameLoader* Create(mozilla::dom::Element* aOwner,
                                nsPIDOMWindowOuter* aOpener,
-                               bool aNetworkCreated);
+                               bool aNetworkCreated,
+                               int32_t aJSPluginID = -1);
 
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_CLASS_AMBIGUOUS(nsFrameLoader, nsIFrameLoader)
@@ -230,7 +231,8 @@ public:
 private:
   nsFrameLoader(mozilla::dom::Element* aOwner,
                 nsPIDOMWindowOuter* aOpener,
-                bool aNetworkCreated);
+                bool aNetworkCreated,
+                int32_t aJSPluginID);
   ~nsFrameLoader();
 
   void SetOwnerContent(mozilla::dom::Element* aContent);
@@ -241,6 +243,11 @@ private:
    * Return true if the frame is a remote frame. Return false otherwise
    */
   bool IsRemoteFrame();
+
+  bool IsForJSPlugin()
+  {
+    return mJSPluginID >= 0;
+  }
 
   /**
    * Is this a frame loader for a bona fide <iframe mozbrowser>?
@@ -342,6 +349,8 @@ private:
 
   TabParent* mRemoteBrowser;
   uint64_t mChildID;
+
+  int32_t mJSPluginID;
 
   // See nsIFrameLoader.idl. EVENT_MODE_NORMAL_DISPATCH automatically
   // forwards some input events to out-of-process content.

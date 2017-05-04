@@ -66,6 +66,7 @@ public:
 
   virtual ContentParentId ChildID() const = 0;
   virtual bool IsForBrowser() const = 0;
+  virtual bool IsForJSPlugin() const = 0;
 
   MOZ_MUST_USE virtual PBlobParent*
   SendPBlobConstructor(PBlobParent* aActor,

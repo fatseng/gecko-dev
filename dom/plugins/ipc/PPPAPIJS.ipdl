@@ -1,0 +1,26 @@
+/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+include protocol PContent;
+include protocol PPPAPIJSPlugin;
+
+namespace mozilla {
+namespace plugins {
+
+intr protocol PPPAPIJS
+{
+parent:
+  intr FromPlugin(nsCString api) returns (nsCString result);
+  async AsyncFromPlugin(nsCString api);
+
+child:
+  intr ToPlugin(nsCString api) returns (nsCString result);
+  intr SendFile(FileDescriptor file) returns (int64_t fd);
+  intr SendShmem(Shmem mem, uintptr_t copyFrom, uintptr_t copyTo)
+    returns (uintptr_t address);
+};
+
+} // namespace plugins
+} // namespace mozilla

@@ -63,7 +63,7 @@ let pdfium = {
       niceName: "PPAPI PDF plugin",
       version: "1.0",
       sandboxScript : `(${sandboxScript.toSource()})(this);`,
-      ppapiProcessArgs: [ rpclib, pluginlib ],
+      ppapiProcessArgs: [ '-rpclib', rpclib, '-pluginlib', pluginlib ],
     });
     plugin.enabledState = Ci.nsIPluginTag.STATE_ENABLED;
   },

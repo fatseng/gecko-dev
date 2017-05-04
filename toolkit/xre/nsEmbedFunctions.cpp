@@ -66,6 +66,7 @@
 #include "ScopedXREEmbed.h"
 
 #include "mozilla/plugins/PluginProcessChild.h"
+#include "mozilla/plugins/PPAPIJSProcessChild.h"
 #include "mozilla/dom/ContentProcess.h"
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/dom/ContentChild.h"
@@ -125,6 +126,7 @@ using mozilla::ipc::ProcessChild;
 using mozilla::ipc::ScopedXREEmbed;
 
 using mozilla::plugins::PluginProcessChild;
+using mozilla::plugins::PPAPIJSProcessChild;
 using mozilla::dom::ContentProcess;
 using mozilla::dom::ContentParent;
 using mozilla::dom::ContentChild;
@@ -615,6 +617,7 @@ XRE_InitChildProcess(int aArgc,
       uiLoopType = MessageLoop::TYPE_MOZILLA_CHILD;
       break;
   case GeckoProcessType_GMPlugin:
+  case GeckoProcessType_PPAPIJS:
       uiLoopType = MessageLoop::TYPE_DEFAULT;
       break;
   default:
@@ -664,6 +667,10 @@ XRE_InitChildProcess(int aArgc,
 
       case GeckoProcessType_GPU:
         process = new gfx::GPUProcessImpl(parentPID);
+        break;
+
+      case GeckoProcessType_PPAPIJS:
+        process = new PPAPIJSProcessChild(parentPID);
         break;
 
       default:

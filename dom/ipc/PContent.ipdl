@@ -44,6 +44,8 @@ include protocol PURLClassifierLocal;
 include protocol PVRManager;
 include protocol PVideoDecoderManager;
 include protocol PFlyWebPublishedServer;
+include protocol PPPAPIJS;
+include protocol PPPAPIJSPlugin;
 include DOMTypes;
 include JavaScriptTypes;
 include IPCStream;
@@ -615,7 +617,7 @@ parent:
     sync CreateChildProcess(IPCTabContext context,
                             ProcessPriority priority,
                             TabId openerTabId)
-        returns (ContentParentId cpId, bool isForBrowser, TabId tabId);
+        returns (ContentParentId cpId, bool isForBrowser, bool isForJSPlugin, TabId tabId);
     sync BridgeToChildProcess(ContentParentId cpId)
         returns (Endpoint<PContentBridgeParent> endpoint);
 
@@ -638,6 +640,9 @@ parent:
     sync ConnectPluginBridge(uint32_t aPluginId)
         returns (nsresult rv, Endpoint<PPluginModuleParent> aEndpoint);
 
+    sync LoadPPAPIPlugin()
+        returns (Endpoint<PPPAPIJSParent> endpoint, nsresult rv);
+
     /**
      * Return the current blocklist state for a particular plugin.
      */
@@ -655,7 +660,7 @@ parent:
      * process. |newPluginEpoch| is the current epoch in the chrome process. If
      * |pluginEpoch == newPluginEpoch|, then |plugins| will be left empty.
      */
-    sync FindPlugins(uint32_t pluginEpoch) returns (nsresult aResult, PluginTag[] plugins, uint32_t newPluginEpoch);
+    sync FindPlugins(uint32_t pluginEpoch) returns (nsresult aResult, PluginTag[] plugins, FakePluginTag[] fakePlugins, uint32_t newPluginEpoch);
 
     async PJavaScript();
 
@@ -849,7 +854,7 @@ parent:
     // Tell the compositor to allocate a layer tree id for nested remote mozbrowsers.
     sync AllocateLayerTreeId(ContentParentId cpId, TabId tabId)
         returns (uint64_t id);
-    async DeallocateLayerTreeId(uint64_t id);
+    async DeallocateLayerTreeId(ContentParentId cpId, uint64_t id);
 
     /**
      * Notifies the parent about a recording device is starting or shutdown.
@@ -909,7 +914,10 @@ parent:
      * Tell the chrome process there is an creation of PBrowser.
      * return a system-wise unique Id.
      */
-    sync AllocateTabId(TabId openerTabId, IPCTabContext context, ContentParentId cpId)
+    sync AllocateTabId(ContentParentId openerCpId,
+                       TabId openerTabId,
+                       IPCTabContext context,
+                       ContentParentId cpId)
         returns (TabId tabId);
     async DeallocateTabId(TabId tabId,
                           ContentParentId cpId,

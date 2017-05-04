@@ -6,8 +6,23 @@
 
 XPCSHELL_TESTS_MANIFESTS += ['test/unit/xpcshell.ini']
 
+DEFINES['MOZ_APP_VERSION'] = CONFIG['MOZ_APP_VERSION']
+DEFINES['MOZ_APP_MAXVERSION'] = CONFIG['MOZ_APP_MAXVERSION']
+
+
+FINAL_TARGET_FILES.features['ppapipdf.js@mozilla.org'] += [
+  'host/pdf/bootstrap.js'
+]
+
+FINAL_TARGET_PP_FILES.features['ppapipdf.js@mozilla.org'] += [
+  'host/pdf/install.rdf.in'
+]
+
+JAR_MANIFESTS += ['jar.mn']
+
 SOURCES += [
     'host/rpc.cc',
 ]
 
-SharedLibrary('rpc')
+GeckoSharedLibrary('rpc')
+ALLOW_COMPILER_WARNINGS = True

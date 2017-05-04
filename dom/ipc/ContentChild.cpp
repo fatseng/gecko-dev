@@ -62,6 +62,7 @@
 #include "mozilla/Omnijar.h"
 #include "mozilla/plugins/PluginInstanceParent.h"
 #include "mozilla/plugins/PluginModuleParent.h"
+#include "mozilla/plugins/PPAPIJSProcessParent.h"
 #include "mozilla/widget/ScreenManager.h"
 #include "mozilla/widget/WidgetMessageUtils.h"
 #include "nsBaseDragService.h"
@@ -773,7 +774,8 @@ ContentChild::ProvideWindowCommon(TabChild* aTabOpener,
 
   MOZ_ASSERT(ipcContext);
   TabId tabId;
-  SendAllocateTabId(openerTabId,
+  SendAllocateTabId(GetID(),
+                    openerTabId,
                     *ipcContext,
                     GetID(),
                     &tabId);

@@ -1,0 +1,41 @@
+/* -*- Mode: C++; c-basic-offset: 2; indent-tabs-mode: nil; tab-width: 8 -*- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#ifndef dom_plugins_PPAPIJSProcessParent_h
+#define dom_plugins_PPAPIJSProcessParent_h 1
+
+#include "mozilla/ipc/GeckoChildProcessHost.h"
+#include "mozilla/plugins/PPPAPIJSParent.h"
+#include "nsIObserver.h"
+#include "nsIPPAPIJSProcess.h"
+
+namespace mozilla {
+namespace plugins {
+
+class PPAPIJSParent;
+
+class PPAPIJSProcess : public nsIPPAPIJSProcess,
+                       public nsIObserver
+{
+public:
+  PPAPIJSProcess();
+
+  NS_DECL_ISUPPORTS
+  NS_DECL_NSIPPAPIJSPROCESS
+  NS_DECL_NSIOBSERVER
+
+  static nsresult SetupBridge(dom::PContentParent* aContentParent,
+                              uint32_t aJSPluginID,
+                              ipc::Endpoint<PPPAPIJSParent>* aParentEndpoint);
+
+private:
+  virtual ~PPAPIJSProcess();
+  PPAPIJSParent* mParent;
+};
+
+} // namespace plugins
+} // namespace mozilla
+
+#endif // ifndef dom_plugins_PPAPIJSProcessParent_h

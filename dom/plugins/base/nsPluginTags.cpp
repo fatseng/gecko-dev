@@ -819,10 +819,31 @@ bool nsPluginTag::IsFromExtension() const
 
 /* nsFakePluginTag */
 
+uint32_t nsFakePluginTag::sNextId;
+
 nsFakePluginTag::nsFakePluginTag()
-  : mState(nsPluginTag::ePluginState_Disabled)
+  : mId(sNextId++),
+    mState(nsPluginTag::ePluginState_Disabled)
 {
 }
+
+nsFakePluginTag::nsFakePluginTag(uint32_t aId,
+                                 already_AddRefed<nsIURI>&& aHandlerURI,
+                                 const char* aName,
+                                 const char* aDescription,
+                                 const nsTArray<nsCString>& aMimeTypes,
+                                 const nsTArray<nsCString>& aMimeDescriptions,
+                                 const nsTArray<nsCString>& aExtensions,
+                                 const char* aNiceName,
+                                 const nsString& aSandboxScript)
+  : nsIInternalPluginTag(aName, aDescription, nullptr, nullptr,
+                         aMimeTypes, aMimeDescriptions, aExtensions),
+    mId(aId),
+    mHandlerURI(aHandlerURI),
+    mNiceName(aNiceName),
+    mSandboxScript(aSandboxScript),
+    mState(nsPluginTag::ePluginState_Enabled)
+{}
 
 nsFakePluginTag::~nsFakePluginTag()
 {
@@ -859,12 +880,18 @@ nsFakePluginTag::Create(const FakePluginTagInit& aInitDictionary,
   CopyUTF16toUTF8(aInitDictionary.mDescription, tag->mDescription);
   CopyUTF16toUTF8(aInitDictionary.mFileName, tag->mFileName);
   CopyUTF16toUTF8(aInitDictionary.mVersion, tag->mVersion);
+  tag->mSandboxScript = aInitDictionary.mSandboxScript;
 
   for (const FakePluginMimeEntry& mimeEntry : aInitDictionary.mMimeEntries) {
     CopyUTF16toUTF8(mimeEntry.mType, *tag->mMimeTypes.AppendElement());
     CopyUTF16toUTF8(mimeEntry.mDescription,
                     *tag->mMimeDescriptions.AppendElement());
     CopyUTF16toUTF8(mimeEntry.mExtension, *tag->mExtensions.AppendElement());
+  }
+
+  for (const nsString& ppapiProcessArg : aInitDictionary.mPpapiProcessArgs) {
+    NS_ConvertUTF16toUTF8 utf8Arg(ppapiProcessArg);
+    tag->mPPAPIProcessArgs.emplace_back(utf8Arg.BeginReading(), utf8Arg.Length());
   }
 
   tag.forget(aPluginTag);
@@ -882,6 +909,13 @@ NS_IMETHODIMP
 nsFakePluginTag::GetHandlerURI(nsIURI **aResult)
 {
   NS_IF_ADDREF(*aResult = mHandlerURI);
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsFakePluginTag::GetSandboxScript(nsAString& aSandboxScript)
+{
+  aSandboxScript = mSandboxScript;
   return NS_OK;
 }
 
@@ -1039,5 +1073,12 @@ NS_IMETHODIMP
 nsFakePluginTag::GetLoaded(bool* ret)
 {
   *ret = true;
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsFakePluginTag::GetId(uint32_t* aId)
+{
+  *aId = mId;
   return NS_OK;
 }

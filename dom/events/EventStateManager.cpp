@@ -95,6 +95,7 @@
 #include "GeckoProfiler.h"
 #include "Units.h"
 #include "mozilla/layers/APZCTreeManager.h"
+#include "nsIObjectLoadingContent.h"
 
 #ifdef XP_MACOSX
 #import <ApplicationServices/ApplicationServices.h>
@@ -1296,6 +1297,15 @@ EventStateManager::IsRemoteTarget(nsIContent* target) {
   nsCOMPtr<nsIMozBrowserFrame> browserFrame = do_QueryInterface(target);
   if (browserFrame && browserFrame->GetReallyIsBrowser()) {
     return !!TabParent::GetFrom(target);
+  }
+
+  nsCOMPtr<nsIObjectLoadingContent> olc = do_QueryInterface(target);
+  if (olc) {
+    uint32_t type = 0;
+    olc->GetDisplayedType(&type);
+    if (type == nsIObjectLoadingContent::TYPE_FAKE_PLUGIN) {
+      return true;
+    }
   }
 
   return false;

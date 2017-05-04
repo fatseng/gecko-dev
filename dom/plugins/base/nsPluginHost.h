@@ -33,6 +33,7 @@
 
 namespace mozilla {
 namespace plugins {
+class FakePluginTag;
 class PluginAsyncSurrogate;
 class PluginTag;
 } // namespace plugins
@@ -117,6 +118,7 @@ public:
 
   nsresult FindPluginsForContent(uint32_t aPluginEpoch,
                                  nsTArray<mozilla::plugins::PluginTag>* aPlugins,
+                                 nsTArray<mozilla::plugins::FakePluginTag>* aFakePlugins,
                                  uint32_t* aNewPluginEpoch);
 
   nsresult GetURL(nsISupports* pluginInst,
@@ -155,6 +157,7 @@ public:
   nsresult StopPluginInstance(nsNPAPIPluginInstance* aInstance);
   nsresult GetPluginTagForInstance(nsNPAPIPluginInstance *aPluginInstance,
                                    nsIPluginTag **aPluginTag);
+  nsFakePluginTag* GetPluginTagForID(int32_t aPluginID);
 
   nsresult
   NewPluginURLStream(const nsString& aURL,

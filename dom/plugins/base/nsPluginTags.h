@@ -13,6 +13,7 @@
 #include "nsIPluginTag.h"
 #include "nsITimer.h"
 #include "nsString.h"
+#include <vector>
 
 class nsIURI;
 struct PRLibrary;
@@ -211,6 +212,15 @@ public:
 
   static nsresult Create(const mozilla::dom::FakePluginTagInit& aInitDictionary,
                          nsFakePluginTag** aPluginTag);
+  nsFakePluginTag(uint32_t aId,
+                  already_AddRefed<nsIURI>&& aHandlerURI,
+                  const char* aName,
+                  const char* aDescription,
+                  const nsTArray<nsCString>& aMimeTypes,
+                  const nsTArray<nsCString>& aMimeDescriptions,
+                  const nsTArray<nsCString>& aExtensions,
+                  const char* aNiceName,
+                  const nsString& aSandboxScript);
 
   bool IsEnabled() override;
   const nsCString& GetNiceFileName() override;
@@ -219,9 +229,18 @@ public:
 
   nsIURI* HandlerURI() const { return mHandlerURI; }
 
+  uint32_t Id() const { return mId; }
+
+  const nsString& SandboxScript() const { return mSandboxScript; }
+
+  const std::vector<std::string>& PPAPIProcessArgs() const
+    { return mPPAPIProcessArgs; }
+
 private:
   nsFakePluginTag();
   virtual ~nsFakePluginTag();
+
+  uint32_t      mId;
 
   // The URI of the handler for our fake plugin.
   // FIXME-jsplugins do we need to sanity check these?
@@ -230,7 +249,13 @@ private:
   nsCString     mFullPath;
   nsCString     mNiceName;
 
+  nsString      mSandboxScript;
+
+  std::vector<std::string> mPPAPIProcessArgs;
+
   nsPluginTag::PluginState mState;
+
+  static uint32_t sNextId;
 };
 
 #endif // nsPluginTags_h_

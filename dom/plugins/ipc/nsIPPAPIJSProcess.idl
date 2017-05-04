@@ -1,0 +1,36 @@
+/* -*- Mode: IDL; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#include "nsISupports.idl"
+
+%{C++
+#define MOZ_PPAPIJS_PROCESS_CONTRACTID \
+  "@mozilla.org/plugin/ppapi.js-process;1"
+%}
+
+interface nsIFile;
+
+[scriptable, function, uuid(cebc0f7e-deee-4c74-9d28-a0c37fcd5a45)]
+interface nsIPPAPIJSFromPluginCallback : nsISupports
+{
+  AUTF8String receiveMessage(in AUTF8String api);
+};
+
+[scriptable, uuid(b3df79eb-e1bd-4f73-a87d-b007d4091d3d)]
+interface nsIPPAPIJSProcess : nsISupports
+{
+  void launch(in nsIPPAPIJSFromPluginCallback fromPlugin);
+  AUTF8String sendMessage(in AUTF8String api);
+  int64_t openAndSend(in nsIFile file, in long flags, in long mode);
+  [implicit_jscontext]
+  uint64_t allocateCachedBuffer(in size_t size);
+  [implicit_jscontext]
+  jsval getCachedBuffer(in uint64_t address);
+  [implicit_jscontext]
+  void freeCachedBuffer(in uint64_t address);
+  void setBuffer(in jsval arrayBuffer, in size_t size, in uint64_t address);
+  [implicit_jscontext]
+  jsval copyFromBuffer(in uint64_t address, in size_t size);
+};

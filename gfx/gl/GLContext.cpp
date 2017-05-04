@@ -1821,12 +1821,12 @@ GLContext::ChooseGLFormats(const SurfaceCaps& caps) const
 
     uint32_t msaaLevel = gfxPrefs::MSAALevel();
     GLsizei samples = msaaLevel * msaaLevel;
-    samples = std::min(samples, mMaxSamples);
-
     // Bug 778765.
     if (WorkAroundDriverBugs() && samples == 1) {
         samples = 0;
     }
+    samples = std::min(samples, mMaxSamples);
+
     formats.samples = samples;
 
 

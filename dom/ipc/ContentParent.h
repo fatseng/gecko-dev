@@ -180,6 +180,10 @@ public:
                              hal::ProcessPriority::PROCESS_PRIORITY_FOREGROUND,
                              ContentParent* aOpener = nullptr);
 
+  static already_AddRefed<ContentParent>
+  GetNewOrUsedJSPluginProcess(uint32_t aPluginID,
+                              const hal::ProcessPriority& aPriority);
+
   /**
    * Get or create a content process for the given TabContext.  aFrameElement
    * should be the frame/iframe element with which this process will
@@ -280,6 +284,7 @@ public:
                                                          const TabId& aOpenerTabId,
                                                          ContentParentId* aCpId,
                                                          bool* aIsForBrowser,
+                                                         bool* aIsForJSPlugin,
                                                          TabId* aTabId) override;
 
   virtual mozilla::ipc::IPCResult RecvBridgeToChildProcess(const ContentParentId& aCpId,
@@ -295,12 +300,16 @@ public:
                                                           nsresult* aRv,
                                                           Endpoint<PPluginModuleParent>* aEndpoint) override;
 
+  virtual mozilla::ipc::IPCResult RecvLoadPPAPIPlugin(Endpoint<plugins::PPPAPIJSParent>* aEndpoint,
+                                                      nsresult* aRv) override;
+
   virtual mozilla::ipc::IPCResult RecvGetBlocklistState(const uint32_t& aPluginId,
                                                         uint32_t* aIsBlocklisted) override;
 
   virtual mozilla::ipc::IPCResult RecvFindPlugins(const uint32_t& aPluginEpoch,
                                                   nsresult* aRv,
                                                   nsTArray<PluginTag>* aPlugins,
+                                                  nsTArray<FakePluginTag>* aFakePlugins,
                                                   uint32_t* aNewPluginEpoch) override;
 
   virtual mozilla::ipc::IPCResult RecvUngrabPointer(const uint32_t& aTime) override;
@@ -350,7 +359,8 @@ public:
   jsipc::CPOWManager* GetCPOWManager() override;
 
   static TabId
-  AllocateTabId(const TabId& aOpenerTabId,
+  AllocateTabId(const ContentParentId& aOpenerCpId,
+                const TabId& aOpenerTabId,
                 const IPCTabContext& aContext,
                 const ContentParentId& aCpId);
 
@@ -372,6 +382,10 @@ public:
   virtual bool IsForBrowser() const override
   {
     return mIsForBrowser;
+  }
+  virtual bool IsForJSPlugin() const override
+  {
+    return mJSPluginID >= 0;
   }
 
   GeckoChildProcessHost* Process() const
@@ -488,7 +502,8 @@ public:
   SendPBlobConstructor(PBlobParent* aActor,
                        const BlobConstructorParams& aParams) override;
 
-  virtual mozilla::ipc::IPCResult RecvAllocateTabId(const TabId& aOpenerTabId,
+  virtual mozilla::ipc::IPCResult RecvAllocateTabId(const ContentParentId& aOpenerCpId,
+                                                    const TabId& aOpenerTabId,
                                                     const IPCTabContext& aContext,
                                                     const ContentParentId& aCpId,
                                                     TabId* aTabId) override;
@@ -683,6 +698,7 @@ private:
    */
   static nsClassHashtable<nsStringHashKey, nsTArray<ContentParent*>>* sBrowserContentParents;
   static nsTArray<ContentParent*>* sPrivateContent;
+  static nsDataHashtable<nsUint32HashKey, ContentParent*> *sJSPluginContentParents;
   static StaticAutoPtr<LinkedList<ContentParent> > sContentParents;
 
   static void JoinProcessesIOThread(const nsTArray<ContentParent*>* aProcesses,
@@ -725,8 +741,17 @@ private:
 
   FORWARD_SHMEM_ALLOCATOR_TO(PContentParent)
 
+  explicit ContentParent(int32_t aPluginID)
+    : ContentParent(nullptr, nsString(), aPluginID)
+  {}
   ContentParent(ContentParent* aOpener,
-                const nsAString& aRemoteType);
+                const nsAString& aRemoteType)
+    : ContentParent(aOpener, aRemoteType, -1)
+  {}
+
+  ContentParent(ContentParent* aOpener,
+                const nsAString& aRemoteType,
+                int32_t aPluginID);
 
   // Launch the subprocess and associated initialization.
   // Returns false if the process fails to start.
@@ -1073,7 +1098,8 @@ private:
                                                           const TabId& aTabId,
                                                           uint64_t* aId) override;
 
-  virtual mozilla::ipc::IPCResult RecvDeallocateLayerTreeId(const uint64_t& aId) override;
+  virtual mozilla::ipc::IPCResult RecvDeallocateLayerTreeId(const ContentParentId& aCpId,
+                                                            const uint64_t& aId) override;
 
   virtual mozilla::ipc::IPCResult RecvGraphicsError(const nsCString& aError) override;
 
@@ -1191,6 +1217,8 @@ private:
 
   ContentParentId mChildID;
   int32_t mGeolocationWatchID;
+
+  int32_t mJSPluginID;
 
   nsCString mKillHardAnnotation;
 

@@ -20,6 +20,7 @@ class ContentParent;
 
 struct RemoteFrameInfo
 {
+  ContentParentId mOpenerCpId;
   TabId mOpenerTabId;
   TabContext mContext;
 };
@@ -78,7 +79,8 @@ public:
    * ContentProcessInfo.  We can use the tab id and process id to locate the
    * TabContext for future use.
    */
-  TabId AllocateTabId(const TabId& aOpenerTabId,
+  TabId AllocateTabId(const ContentParentId& aOpenerCpId,
+                      const TabId& aOpenerTabId,
                       const IPCTabContext& aContext,
                       const ContentParentId& aChildCpId);
 
@@ -108,6 +110,7 @@ public:
    */
   bool GetRemoteFrameOpenerTabId(const ContentParentId& aChildCpId,
                                  const TabId& aChildTabId,
+                                 /*out*/ContentParentId* aOpenerCpId,
                                  /*out*/ TabId* aOpenerTabId);
 
   /**

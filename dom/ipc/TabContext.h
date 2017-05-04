@@ -63,6 +63,9 @@ public:
    */
   bool IsMozBrowser() const;
 
+  bool IsJSPlugin() const;
+  int32_t JSPluginId() const;
+
   /**
    * OriginAttributesRef() returns the OriginAttributes of this frame to
    * the caller. This is used to store any attribute associated with the frame's
@@ -124,6 +127,11 @@ protected:
    */
   bool mIsPrerendered;
 
+  /**
+   *
+   */
+  bool SetTabContextForJSPluginFrame(int32_t aJSPluginID);
+
 private:
   /**
    * Has this TabContext been initialized?  If so, mutator methods will fail.
@@ -137,6 +145,8 @@ private:
    * mozbrowser elements.
    */
   bool mIsMozBrowserElement;
+
+  int32_t mJSPluginID;
 
   /**
    * OriginAttributes of the top level tab docShell
@@ -183,6 +193,12 @@ public:
                                      aOriginAttributes,
                                      aPresentationURL);
   }
+
+  bool SetTabContextForJSPluginFrame(uint32_t aJSPluginID)
+  {
+    return TabContext::SetTabContextForJSPluginFrame(aJSPluginID);
+  }
+
 };
 
 /**

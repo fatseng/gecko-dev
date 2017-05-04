@@ -389,6 +389,8 @@ enum GeckoProcessType
 
   GeckoProcessType_GPU,      // GPU and compositor process
 
+  GeckoProcessType_PPAPIJS,
+
   GeckoProcessType_End,
   GeckoProcessType_Invalid = GeckoProcessType_End
 };
@@ -399,7 +401,8 @@ static const char* const kGeckoProcessTypeString[] = {
   "tab",
   "ipdlunittest",
   "geckomediaplugin",
-  "gpu"
+  "gpu",
+  "ppapi.js"
 };
 
 static_assert(MOZ_ARRAY_LENGTH(kGeckoProcessTypeString) ==

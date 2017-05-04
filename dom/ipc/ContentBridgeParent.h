@@ -66,6 +66,11 @@ public:
     // XXX: do we need this for ContentBridgeParent?
     return -1;
   }
+  virtual bool IsForJSPlugin() const override
+  {
+    return mIsForJSPlugin;
+  }
+
 
   virtual mozilla::ipc::PParentToChildStreamParent*
   SendPParentToChildStreamConstructor(mozilla::ipc::PParentToChildStreamParent*) override;
@@ -97,6 +102,10 @@ protected:
   void SetIsForBrowser(bool aIsForBrowser)
   {
     mIsForBrowser = aIsForBrowser;
+  }
+  void SetIsForJSPlugin(bool aIsForJSPlugin)
+  {
+    mIsForJSPlugin = aIsForJSPlugin;
   }
 
   void Close()
@@ -166,6 +175,7 @@ protected: // members
   RefPtr<ContentBridgeParent> mSelfRef;
   ContentParentId mChildID;
   bool mIsForBrowser;
+  bool mIsForJSPlugin;
 
 private:
   friend class ContentParent;

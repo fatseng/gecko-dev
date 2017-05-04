@@ -7,6 +7,12 @@
 if CONFIG['MOZ_WIDGET_TOOLKIT'] == 'cocoa':
     DIRS += ['interpose']
 
+XPIDL_SOURCES += [
+    'nsIPPAPIJSProcess.idl',
+]
+
+XPIDL_MODULE = 'plugin'
+
 EXPORTS.mozilla += [
     'PluginLibrary.h',
 ]
@@ -39,6 +45,8 @@ EXPORTS.mozilla.plugins += [
     'PluginStreamChild.h',
     'PluginStreamParent.h',
     'PluginUtilsOSX.h',
+    'PPAPIJSProcessChild.h',
+    'PPAPIJSProcessParent.h',
     'StreamNotifyChild.h',
     'StreamNotifyParent.h',
 ]
@@ -82,6 +90,8 @@ UNIFIED_SOURCES += [
     'PluginScriptableObjectParent.cpp',
     'PluginStreamChild.cpp',
     'PluginStreamParent.cpp',
+    'PPAPIJSProcessChild.cpp',
+    'PPAPIJSProcessParent.cpp',
 ]
 
 SOURCES += [
@@ -118,6 +128,8 @@ IPDL_SOURCES += [
     'PPluginScriptableObject.ipdl',
     'PPluginStream.ipdl',
     'PPluginSurface.ipdl',
+    'PPPAPIJS.ipdl',
+    'PPPAPIJSPlugin.ipdl',
     'PStreamNotify.ipdl',
 ]
 
@@ -127,6 +139,7 @@ FINAL_LIBRARY = 'xul'
 LOCAL_INCLUDES += [
     '../base',
     '/xpcom/base/',
+    '/xpcom/threads/',
 ]
 
 if CONFIG['MOZ_SANDBOX'] and CONFIG['OS_ARCH'] == 'WINNT':

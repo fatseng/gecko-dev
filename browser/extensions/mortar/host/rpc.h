@@ -59,16 +59,6 @@ typedef const void* mem_t;
 typedef void* const * mem_ptr_t;
 typedef const char* str_t;
 typedef const char* cstr_t;
-typedef int GLint;
-typedef unsigned int GLuint;
-typedef unsigned int GLenum;
-typedef unsigned int GLbitfield;
-typedef unsigned char GLboolean;
-typedef float GLclampf;
-typedef float GLfloat;
-typedef long int GLintptr;
-typedef int GLsizei;
-typedef long int GLsizeiptr;
 typedef const GLint * GLint_ptr_t;
 typedef const GLuint * GLuint_ptr_t;
 typedef const GLenum * GLenum_ptr_t;
@@ -315,7 +305,7 @@ class JSONIterator {
   JSON::Parser::iterator end;
 
 public:
-  JSONIterator(const std::string& json)
+  explicit JSONIterator(const std::string& json)
   {
     if (parser.parse(json) <= 0) {
       Fail("Fatal: failed to parse '%s'\n", json.c_str());

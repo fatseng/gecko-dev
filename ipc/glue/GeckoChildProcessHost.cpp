@@ -1047,6 +1047,16 @@ GeckoChildProcessHost::PerformAsyncLaunchInternal(std::vector<std::string>& aExt
       }
 #endif // MOZ_CONTENT_SANDBOX
       break;
+    case GeckoProcessType_PPAPIJS:
+      if (mSandboxLevel > 0 &&
+          !PR_GetEnv("MOZ_DISABLE_PPAPI_SANDBOX")) {
+        bool ok = mSandboxBroker.SetSecurityLevelForPluginProcess(mSandboxLevel);
+        if (!ok) {
+          return false;
+        }
+        shouldSandboxCurrentProcess = true;
+      }
+      break;
     case GeckoProcessType_Plugin:
       if (mSandboxLevel > 0 &&
           !PR_GetEnv("MOZ_DISABLE_NPAPI_SANDBOX")) {
