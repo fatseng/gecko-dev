@@ -230,3 +230,10 @@ nsDeviceContextSpecProxy::EndPage()
 
   return NS_OK;
 }
+
+NS_IMETHODIMP
+nsDeviceContextSpecProxy::PrintPDF(const nsAString& aPDFFilePath)
+{
+  mRemotePrintJob->PrintPDF(nsString(aPDFFilePath));
+  return NS_OK;
+}

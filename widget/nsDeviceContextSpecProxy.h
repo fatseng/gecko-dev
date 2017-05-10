@@ -54,6 +54,8 @@ public:
 
   NS_IMETHOD EndPage() final;
 
+  NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath) final;
+
 private:
   ~nsDeviceContextSpecProxy() {}
 

@@ -144,6 +144,16 @@ RemotePrintJobParent::PrintPage(const nsCString& aPageFileName)
 }
 
 mozilla::ipc::IPCResult
+RemotePrintJobParent::RecvPrintPDF(const nsString& aPDFFilePath)
+{
+  // TODO: Actually print the PDF before we call SendDonePrintingPDF()
+  // Fixed in a later patch.
+  Unused << SendDonePrintingPDF();
+
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult
 RemotePrintJobParent::RecvFinalizePrint()
 {
   // EndDocument is sometimes called in the child even when BeginDocument has

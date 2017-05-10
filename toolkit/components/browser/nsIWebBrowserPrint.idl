@@ -148,5 +148,22 @@ interface nsIWebBrowserPrint : nsISupports
    */
   void exitPrintPreview();
 
+  /**
+   * Show print dialog and setup a printing IPC between the Chrome process and
+   * the Content process
+   *
+   * @param aThePrintSettings - Printer Settings for the print job
+   * @return void
+   */
+  void showPrintDialog(in nsIPrintSettings aThePrintSettings);
+
+  /**
+   * Print the specified PDF file
+   *
+   * @param aPDFFilePath - file path
+   * @return void
+   */
+  void printPDF(in AString aPDFFilePath);
+
 };
 

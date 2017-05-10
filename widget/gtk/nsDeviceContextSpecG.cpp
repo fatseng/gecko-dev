@@ -347,6 +347,11 @@ NS_IMETHODIMP nsDeviceContextSpecGTK::EndDocument()
   }
   return NS_OK;
 }
+NS_IMETHODIMP nsDeviceContextSpecGTK::PrintPDF(const nsAString& aPDFFilePath)
+{
+  NS_NOTYETIMPLEMENTED("Doesn't implement yet, please write me");
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
 
 //  Printer Enumerator
 nsPrinterEnumeratorGTK::nsPrinterEnumeratorGTK()

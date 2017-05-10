@@ -78,6 +78,8 @@ public:
    NS_IMETHOD AbortDocument() { return EndDocument(); }
    NS_IMETHOD BeginPage() = 0;
    NS_IMETHOD EndPage() = 0;
+
+   NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath) = 0;
 };
 
 NS_DEFINE_STATIC_IID_ACCESSOR(nsIDeviceContextSpec,

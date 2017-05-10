@@ -29,6 +29,8 @@ public:
     NS_IMETHOD BeginPage() override { return NS_OK; }
     NS_IMETHOD EndPage() override { return NS_OK; }
 
+    NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath) override;
+
 private:
     nsCOMPtr<nsIPrintSettings> mPrintSettings;
     nsCOMPtr<nsIFile> mTempFile;

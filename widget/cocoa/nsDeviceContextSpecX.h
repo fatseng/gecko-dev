@@ -31,6 +31,8 @@ public:
       return NS_OK;
     };
 
+    NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath) override;
+
     void GetPaperRect(double* aTop, double* aLeft, double* aBottom, double* aRight);
 
 protected:

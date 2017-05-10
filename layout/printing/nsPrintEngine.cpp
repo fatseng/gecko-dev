@@ -242,6 +242,8 @@ void nsPrintEngine::Destroy()
 
   mPrt = nullptr;
 
+  mDevspec = nullptr;
+
 #ifdef NS_PRINT_PREVIEW
   mPrtPreview = nullptr;
   mOldPrtPreview = nullptr;
@@ -809,6 +811,52 @@ nsPrintEngine::PrintPreview(nsIPrintSettings* aPrintSettings,
 
   // Document is not busy -- go ahead with the Print Preview
   return CommonPrint(true, aPrintSettings, aWebProgressListener, domDoc);
+}
+
+NS_IMETHODIMP
+nsPrintEngine::ShowPrintDialog(nsIPrintSettings* aPrintSettings)
+{
+  nsCOMPtr<nsIPrintSession> printSession;
+  nsresult rv = aPrintSettings->GetPrintSession(getter_AddRefs(printSession));
+  if (NS_FAILED(rv) || !printSession) {
+    printSession = do_CreateInstance("@mozilla.org/gfx/printsession;1", &rv);
+    NS_ENSURE_SUCCESS(rv, rv);
+    aPrintSettings->SetPrintSession(printSession);
+  }
+
+  nsCOMPtr<nsIWebBrowserPrint> wbp(do_QueryInterface(mDocViewerPrint));
+  NS_ENSURE_TRUE(mDocument, NS_ERROR_NULL_POINTER);
+  nsPIDOMWindowOuter* domWin = mDocument->GetWindow();
+  NS_ENSURE_TRUE(domWin, NS_ERROR_FAILURE);
+  nsCOMPtr<nsIPrintingPromptService> printPromptService(do_GetService(kPrintingPromptService));
+  NS_ENSURE_TRUE(printPromptService, NS_ERROR_FAILURE);
+  rv = printPromptService->ShowPrintDialog(domWin, wbp, aPrintSettings);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  RefPtr<mozilla::layout::RemotePrintJobChild> remotePrintJob;
+  printSession->GetRemotePrintJob(getter_AddRefs(remotePrintJob));
+  if (remotePrintJob) {
+    remotePrintJob->SetPrintEngine(this);
+  }
+
+  if (XRE_IsContentProcess()) {
+    mDevspec = new nsDeviceContextSpecProxy();
+  } else {
+    mDevspec = do_CreateInstance("@mozilla.org/gfx/devicecontextspec;1", &rv);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+
+  return mDevspec->Init(nullptr, aPrintSettings, false);
+}
+
+NS_IMETHODIMP
+nsPrintEngine::PrintPDF(const nsAString&  aPDFFilePath)
+{
+  NS_ENSURE_STATE(mDevspec);
+
+  SetIsPrinting(true);
+
+  return mDevspec->PrintPDF(aPDFFilePath);
 }
 
 //----------------------------------------------------------------------------------
@@ -3081,6 +3129,17 @@ nsPrintEngine::DonePrintingPages(nsPrintObject* aPO, nsresult aResult)
   // Release reference to mPagePrintTimer; the timer object destroys itself
   // after this returns true
   DisconnectPagePrintTimer();
+
+  return true;
+}
+
+bool
+nsPrintEngine::DonePrintingPDF()
+{
+  PR_PL(("****** In DV::DonePrintingPDF \n"));
+
+  FirePrintCompletionEvent();
+  SetIsPrinting(false);
 
   return true;
 }

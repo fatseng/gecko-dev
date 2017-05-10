@@ -63,6 +63,21 @@ RemotePrintJobChild::RecvPageProcessed()
   return IPC_OK();
 }
 
+void
+RemotePrintJobChild::PrintPDF(const nsString& aPDFFilePath)
+{
+  Unused << SendPrintPDF(aPDFFilePath);
+}
+
+mozilla::ipc::IPCResult
+RemotePrintJobChild::RecvDonePrintingPDF()
+{
+  MOZ_ASSERT(mPrintEngine);
+
+  mPrintEngine->DonePrintingPDF();
+  return IPC_OK();
+}
+
 mozilla::ipc::IPCResult
 RemotePrintJobChild::RecvAbortPrint(const nsresult& aRv)
 {

@@ -236,6 +236,16 @@ NS_IMETHODIMP nsDeviceContextSpecX::EndDocument()
   NS_OBJC_END_TRY_ABORT_BLOCK_NSRESULT;
 }
 
+NS_IMETHODIMP nsDeviceContextSpecX::PrintPDF(const nsAString& aPDFFilePath)
+{
+  NS_OBJC_BEGIN_TRY_ABORT_BLOCK_NSRESULT;
+
+  NS_NOTYETIMPLEMENTED("Doesn't implement yet, please write me");
+  return NS_ERROR_NOT_IMPLEMENTED;
+
+  NS_OBJC_END_TRY_ABORT_BLOCK_NSRESULT;
+}
+
 void nsDeviceContextSpecX::GetPaperRect(double* aTop, double* aLeft, double* aBottom, double* aRight)
 {
     NS_OBJC_BEGIN_TRY_ABORT_BLOCK;

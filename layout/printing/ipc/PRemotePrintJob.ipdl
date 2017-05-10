@@ -43,6 +43,9 @@ parent:
   // Report a status change to listeners in the parent process.
   async StatusChange(nsresult aStatus);
 
+  // Send PDF file to printer
+  async PrintPDF(nsString aPDFFilePath);
+
 child:
   // Inform the child that the print has been initialized in the parent or has
   // failed with result aRv.
@@ -50,6 +53,9 @@ child:
 
   // Inform the child that the latest page has been processed remotely.
   async PageProcessed();
+
+  // Inform the child that PDF has been printed remotely.
+  async DonePrintingPDF();
 
   async __delete__();
 };

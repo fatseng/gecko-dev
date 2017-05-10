@@ -33,6 +33,10 @@ public:
   NS_IMETHOD BeginPage() override { return NS_OK; }
   NS_IMETHOD EndPage() override { return NS_OK; }
 
+  NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath) override {
+    return NS_ERROR_NOT_IMPLEMENTED;
+  }
+
   NS_IMETHOD Init(nsIWidget* aWidget, nsIPrintSettings* aPS, bool aIsPrintPreview) override;
 
   float GetDPI() final;

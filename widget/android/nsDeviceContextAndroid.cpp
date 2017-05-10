@@ -81,3 +81,10 @@ nsDeviceContextSpecAndroid::EndDocument()
   destFile->SetPermissions(0666);
   return NS_OK;
 }
+
+NS_IMETHODIMP
+nsDeviceContextSpecAndroid::PrintPDF(const nsAString& aPDFFilePath)
+{
+  MOZ_ASSERT_UNREACHABLE("On Android we download PDFs, so they're never printed by Firefox");
+  return NS_ERROR_NOT_IMPLEMENTED;
+}

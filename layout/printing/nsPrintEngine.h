@@ -65,6 +65,8 @@ public:
   NS_IMETHOD GetDoingPrintPreview(bool *aDoingPrintPreview);
   NS_IMETHOD GetCurrentPrintSettings(nsIPrintSettings **aCurrentPrintSettings);
 
+  NS_IMETHOD ShowPrintDialog(nsIPrintSettings* aPrintSettings);
+  NS_IMETHOD PrintPDF(const nsAString&  aPDFFilePath);
 
   // This enum tells indicates what the default should be for the title
   // if the title from the document is null
@@ -112,6 +114,8 @@ public:
   bool     PrePrintPage();
   bool     PrintPage(nsPrintObject* aPOect, bool& aInRange);
   bool     DonePrintingPages(nsPrintObject* aPO, nsresult aResult);
+
+  bool     DonePrintingPDF();
 
   //---------------------------------------------------------------------
   void BuildDocTree(nsIDocShell *      aParentNode,
@@ -281,6 +285,10 @@ protected:
   bool mDidLoadDataForPrinting;
   bool mIsDestroying;
   bool mDisallowSelectionPrint;
+
+  // This is only used when we print a PDF via |PrintPDF|.
+  // It is allocated when PrintPDF is called and is deleted when destorying nsPrintEngine.
+  nsCOMPtr<nsIDeviceContextSpec> mDevspec;
 
   nsresult AfterNetworkPrint(bool aHandleError);
 

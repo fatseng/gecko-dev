@@ -95,6 +95,18 @@ MockWebBrowserPrint::GetPrintPreviewNumPages(int32_t *aPrintPreviewNumPages)
 }
 
 NS_IMETHODIMP
+MockWebBrowserPrint::ShowPrintDialog(nsIPrintSettings* aPrintSettings)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
+MockWebBrowserPrint::PrintPDF(const nsAString& aPDFFilePath)
+{
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP
 MockWebBrowserPrint::Print(nsIPrintSettings* aThePrintSettings,
                            nsIWebProgressListener* aWPListener)
 {

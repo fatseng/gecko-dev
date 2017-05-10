@@ -322,6 +322,8 @@ protected:
 
   void DetachFromTopLevelWidget();
 
+  nsresult EnsurePrintEngineInitialized(nsIDocument* aDocument);
+
   // IMPORTANT: The ownership implicit in the following member
   // variables has been explicitly checked and set using nsCOMPtr
   // for owning pointers and raw COM interface pointers for weak
@@ -3796,8 +3798,55 @@ nsDocViewerFocusListener::Init(nsDocumentViewer *aDocViewer)
 #ifdef NS_PRINTING
 
 NS_IMETHODIMP
+nsDocumentViewer::ShowPrintDialog(nsIPrintSettings* aPrintSettings)
+{
+  MOZ_ASSERT(aPrintSettings && mDocument);
+
+  nsresult rv = EnsurePrintEngineInitialized(mDocument);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  return mPrintEngine->ShowPrintDialog(aPrintSettings);
+}
+
+NS_IMETHODIMP
+nsDocumentViewer::PrintPDF(const nsAString& aPDFFilePath)
+{
+  NS_ENSURE_STATE(mPrintEngine);
+
+  // if we are printing another URL, then exit
+  // the reason we check here is because this method can be called while
+  // another is still in here (the printing dialog is a good example).
+  // the only time we can print more than one job at a time is the regression tests
+  if (GetIsPrinting()) {
+    // Let the user know we are not ready to print.
+    mPrintEngine->FirePrintingErrorEvent(NS_ERROR_NOT_AVAILABLE);
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+
+  // Dispatch 'beforeprint' event and ensure 'afterprint' will be dispatched.
+  // Script listens the 'afterprint' event to remove the PDF file which is used
+  // for printing. In the future, we will replace this event by promise.
+  MOZ_ASSERT(!mAutoBeforeAndAfterPrint,
+             "We don't want to dispatch nested beforeprint/afterprint");
+  nsAutoPtr<AutoPrintEventDispatcher> autoBeforeAndAfterPrint(
+    new AutoPrintEventDispatcher(mDocument));
+  NS_ENSURE_STATE(!GetIsPrinting());
+
+  // Postpone the 'afterprint' event until printing has finished or aborted
+  mAutoBeforeAndAfterPrint = autoBeforeAndAfterPrint;
+  mPrintEngine->SetDisallowSelectionPrint(true);
+  nsresult rv = mPrintEngine->PrintPDF(aPDFFilePath);
+  if (NS_FAILED(rv)) {
+    mPrintEngine->SetIsPrinting(false);
+    OnDonePrinting();
+  }
+
+  return rv;
+}
+
+NS_IMETHODIMP
 nsDocumentViewer::Print(nsIPrintSettings*       aPrintSettings,
-                          nsIWebProgressListener* aWebProgressListener)
+                        nsIWebProgressListener* aWebProgressListener)
 {
   // Printing XUL documents is not supported.
   nsCOMPtr<nsIXULDocument> xulDoc(do_QueryInterface(mDocument));
@@ -3863,26 +3912,9 @@ nsDocumentViewer::Print(nsIPrintSettings*       aPrintSettings,
   if (pDoc)
     return pDoc->Print();
 
-  if (!mPrintEngine) {
-    NS_ENSURE_STATE(mDeviceContext);
-    mPrintEngine = new nsPrintEngine();
+  rv = EnsurePrintEngineInitialized(mDocument);
+  NS_ENSURE_SUCCESS(rv, rv);
 
-    rv = mPrintEngine->Initialize(this, mContainer, mDocument, 
-                                  float(mDeviceContext->AppUnitsPerCSSInch()) /
-                                  float(mDeviceContext->AppUnitsPerDevPixel()) /
-                                  mPageZoom,
-#ifdef DEBUG
-                                  mDebugFile
-#else
-                                  nullptr
-#endif
-                                  );
-    if (NS_FAILED(rv)) {
-      mPrintEngine->Destroy();
-      mPrintEngine = nullptr;
-      return rv;
-    }
-  }
   if (mPrintEngine->HasPrintCallbackCanvas()) {
     // Postpone the 'afterprint' event until after the mozPrintCallback
     // callbacks have been called:
@@ -3950,26 +3982,9 @@ nsDocumentViewer::PrintPreview(nsIPrintSettings* aPrintSettings,
   NS_ENSURE_STATE(!GetIsPrinting());
   // beforeprint event may have caused ContentViewer to be shutdown.
   NS_ENSURE_STATE(mContainer);
-  NS_ENSURE_STATE(mDeviceContext);
-  if (!mPrintEngine) {
-    mPrintEngine = new nsPrintEngine();
+  rv = EnsurePrintEngineInitialized(doc);
+  NS_ENSURE_SUCCESS(rv, rv);
 
-    rv = mPrintEngine->Initialize(this, mContainer, doc,
-                                  float(mDeviceContext->AppUnitsPerCSSInch()) /
-                                  float(mDeviceContext->AppUnitsPerDevPixel()) /
-                                  mPageZoom,
-#ifdef DEBUG
-                                  mDebugFile
-#else
-                                  nullptr
-#endif
-                                  );
-    if (NS_FAILED(rv)) {
-      mPrintEngine->Destroy();
-      mPrintEngine = nullptr;
-      return rv;
-    }
-  }
   if (autoBeforeAndAfterPrint &&
       mPrintEngine->HasPrintCallbackCanvas()) {
     // Postpone the 'afterprint' event until after the mozPrintCallback
@@ -4287,6 +4302,33 @@ nsDocumentViewer::SetIsPrintingInDocShellTree(nsIDocShellTreeItem* aParentNode,
     }
   }
 
+}
+
+nsresult
+nsDocumentViewer::EnsurePrintEngineInitialized(nsIDocument* aDocument)
+{
+  if (mPrintEngine)
+    return NS_OK;
+
+  NS_ENSURE_STATE(mDeviceContext);
+
+  mPrintEngine = new nsPrintEngine();
+  nsresult rv = mPrintEngine->Initialize(this, mContainer, aDocument,
+    float(mDeviceContext->AppUnitsPerCSSInch()) /
+    float(mDeviceContext->AppUnitsPerDevPixel()) /
+    mPageZoom,
+#ifdef DEBUG
+    mDebugFile
+#else
+    nullptr
+#endif
+    );
+  if (NS_FAILED(rv)) {
+    mPrintEngine->Destroy();
+    mPrintEngine = nullptr;
+    return rv;
+  }
+  return NS_OK;
 }
 #endif // NS_PRINTING
 

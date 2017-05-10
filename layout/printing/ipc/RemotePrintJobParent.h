@@ -36,6 +36,8 @@ public:
 
   mozilla::ipc::IPCResult RecvProcessPage(const nsCString& aPageFileName) final;
 
+  mozilla::ipc::IPCResult RecvPrintPDF(const nsString& aPDFFilePath) final;
+
   mozilla::ipc::IPCResult RecvFinalizePrint() final;
 
   mozilla::ipc::IPCResult RecvAbortPrint(const nsresult& aRv) final;

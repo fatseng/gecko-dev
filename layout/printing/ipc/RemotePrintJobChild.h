@@ -46,6 +46,10 @@ public:
 
   void SetPrintEngine(nsPrintEngine* aPrintEngine);
 
+  void PrintPDF(const nsString& aPDFFilePath);
+
+  mozilla::ipc::IPCResult RecvDonePrintingPDF() final;
+
 private:
   ~RemotePrintJobChild() final;
 
