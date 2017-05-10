@@ -10,11 +10,29 @@
 #include "mozilla/plugins/PPPAPIJSParent.h"
 #include "nsIObserver.h"
 #include "nsIPPAPIJSProcess.h"
+#include "mozilla/plugins/PPPAPIJSPluginParent.h"
 
 namespace mozilla {
 namespace plugins {
 
 class PPAPIJSParent;
+
+class PPAPIJSPluginParent : public PPPAPIJSPluginParent
+{
+public:
+  explicit PPAPIJSPluginParent(uint32_t aJSPluginID,
+                               ipc::GeckoChildProcessHost* aProcess)
+    : mJSPluginID(aJSPluginID),
+      mProcess(aProcess)
+  { }
+  void Delete();
+  virtual void ActorDestroy(ActorDestroyReason aWhy) override;
+  virtual void DeallocPPPAPIJSPluginParent() override;
+
+private:
+  uint32_t mJSPluginID;
+  nsAutoPtr<ipc::GeckoChildProcessHost> mProcess;
+};
 
 class PPAPIJSProcess : public nsIPPAPIJSProcess,
                        public nsIObserver
@@ -29,6 +47,7 @@ public:
   static nsresult SetupBridge(dom::PContentParent* aContentParent,
                               uint32_t aJSPluginID,
                               ipc::Endpoint<PPPAPIJSParent>* aParentEndpoint);
+  static PPAPIJSPluginParent* GetPPAPIJSPluginParent(uint32_t aJSPluginID);
 
 private:
   virtual ~PPAPIJSProcess();

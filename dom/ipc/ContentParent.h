@@ -677,7 +677,12 @@ public:
 
   nsresult TransmitPermissionsForPrincipal(nsIPrincipal* aPrincipal);
 
+  static uint32_t GetJSPluginID() { return sPluginID; }
+
 protected:
+
+  static uint32_t sPluginID;
+
   void OnChannelConnected(int32_t pid) override;
 
   virtual void ActorDestroy(ActorDestroyReason why) override;

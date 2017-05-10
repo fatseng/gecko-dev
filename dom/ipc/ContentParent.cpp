@@ -432,7 +432,7 @@ ContentParentsMemoryReporter::CollectReports(
 
   return NS_OK;
 }
-
+uint32_t ContentParent::sPluginID;
 nsClassHashtable<nsStringHashKey, nsTArray<ContentParent*>>* ContentParent::sBrowserContentParents;
 
 namespace {
@@ -959,6 +959,7 @@ ContentParent::RecvCreateChildProcess(const IPCTabContext& aContext,
   if (tc.GetTabContext().IsJSPlugin()) {
     cp = GetNewOrUsedJSPluginProcess(tc.GetTabContext().JSPluginId(),
                                      aPriority);
+    sPluginID = tc.GetTabContext().JSPluginId();
   }
   else {
     cp = GetNewOrUsedBrowserProcess(NS_LITERAL_STRING(DEFAULT_REMOTE_TYPE),

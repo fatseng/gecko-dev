@@ -9,7 +9,6 @@
 #include "mozilla/dom/PContentParent.h"
 #include "mozilla/ipc/FileDescriptor.h"
 #include "mozilla/ipc/ProcessChild.h"
-#include "mozilla/plugins/PPPAPIJSPluginParent.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Services.h"
 #include "nsAnonymousTemporaryFile.h"
@@ -135,27 +134,13 @@ PPAPIJSParent::RemoveCachedShmem(JSContext* aCx, uintptr_t aAddress)
   mShmemSet.RemoveEntry(entry);
 }
 
-class PPAPIJSPluginParent : public PPPAPIJSPluginParent
+void
+PPAPIJSPluginParent::Delete()
 {
-public:
-  explicit PPAPIJSPluginParent(uint32_t aJSPluginID,
-                               ipc::GeckoChildProcessHost* aProcess)
-    : mJSPluginID(aJSPluginID),
-      mProcess(aProcess)
-  { }
-  void Delete()
-  {
-    RefPtr<DeleteTask<PPAPIJSPluginParent>> task =
-      new DeleteTask<PPAPIJSPluginParent>(this);
-    XRE_GetIOMessageLoop()->PostTask(task.forget());
-  }
-  virtual void ActorDestroy(ActorDestroyReason aWhy) override;
-  virtual void DeallocPPPAPIJSPluginParent() override;
-
-private:
-  uint32_t mJSPluginID;
-  nsAutoPtr<ipc::GeckoChildProcessHost> mProcess;
-};
+  RefPtr<DeleteTask<PPAPIJSPluginParent>> task =
+    new DeleteTask<PPAPIJSPluginParent>(this);
+  XRE_GetIOMessageLoop()->PostTask(task.forget());
+}
 
 static std::vector<PPAPIJSPluginParent*> sPPAPIPlugins;
 
@@ -208,6 +193,13 @@ PPAPIJSProcess::Launch(nsIPPAPIJSFromPluginCallback* aFromPlugin)
   mParent = new PPAPIJSParent(aFromPlugin);
   endpoint.Bind(mParent);
   return NS_OK;
+}
+
+/* static */
+PPAPIJSPluginParent*
+PPAPIJSProcess::GetPPAPIJSPluginParent(uint32_t aJSPluginID)
+{
+  return sPPAPIPlugins[aJSPluginID];
 }
 
 /* static */
