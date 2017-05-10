@@ -31,6 +31,7 @@ using mozilla::gfx::PrintTargetCG;
 using mozilla::gfx::PrintTargetSkPDF;
 #endif
 using mozilla::gfx::SurfaceFormat;
+using mozilla::layout;
 
 nsDeviceContextSpecX::nsDeviceContextSpecX()
 : mPrintSession(NULL)
@@ -236,7 +237,8 @@ NS_IMETHODIMP nsDeviceContextSpecX::EndDocument()
   NS_OBJC_END_TRY_ABORT_BLOCK_NSRESULT;
 }
 
-NS_IMETHODIMP nsDeviceContextSpecX::PrintPDF(const nsAString& aPDFFilePath)
+NS_IMETHODIMP nsDeviceContextSpecX::PrintPDF(const nsAString& aPDFFilePath,
+  RemotePrintJobParent* aRemotePrintJobParent /* = nullptr */)
 {
   NS_OBJC_BEGIN_TRY_ABORT_BLOCK_NSRESULT;
 

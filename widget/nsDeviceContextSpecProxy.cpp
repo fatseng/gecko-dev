@@ -24,6 +24,7 @@ using mozilla::Unused;
 
 using namespace mozilla;
 using namespace mozilla::gfx;
+using namespace mozilla::layout;
 
 NS_IMPL_ISUPPORTS(nsDeviceContextSpecProxy, nsIDeviceContextSpec)
 
@@ -232,7 +233,8 @@ nsDeviceContextSpecProxy::EndPage()
 }
 
 NS_IMETHODIMP
-nsDeviceContextSpecProxy::PrintPDF(const nsAString& aPDFFilePath)
+nsDeviceContextSpecProxy::PrintPDF(const nsAString& aPDFFilePath,
+  RemotePrintJobParent* aRemotePrintJobParent /* = nullptr */)
 {
   mRemotePrintJob->PrintPDF(nsString(aPDFFilePath));
   return NS_OK;

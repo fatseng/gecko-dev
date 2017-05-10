@@ -14,6 +14,7 @@
 
 using namespace mozilla;
 using namespace mozilla::gfx;
+using namespace mozilla::layout;
 
 NS_IMPL_ISUPPORTS(nsDeviceContextSpecAndroid, nsIDeviceContextSpec)
 
@@ -41,8 +42,8 @@ nsDeviceContextSpecAndroid::MakePrintTarget()
 
 NS_IMETHODIMP
 nsDeviceContextSpecAndroid::Init(nsIWidget* aWidget,
-                             nsIPrintSettings* aPS,
-                             bool aIsPrintPreview)
+                                 nsIPrintSettings* aPS,
+                                 bool aIsPrintPreview)
 {
   mPrintSettings = aPS;
   return NS_OK;
@@ -83,7 +84,8 @@ nsDeviceContextSpecAndroid::EndDocument()
 }
 
 NS_IMETHODIMP
-nsDeviceContextSpecAndroid::PrintPDF(const nsAString& aPDFFilePath)
+nsDeviceContextSpecAndroid::PrintPDF(const nsAString& aPDFFilePath,
+  RemotePrintJobParent* aRemotePrintJobParent /* = nullptr */)
 {
   MOZ_ASSERT_UNREACHABLE("On Android we download PDFs, so they're never printed by Firefox");
   return NS_ERROR_NOT_IMPLEMENTED;

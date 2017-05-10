@@ -16,6 +16,10 @@ namespace gfx{
 class DrawEventRecorder;
 class PrintTarget;
 }
+
+namespace layout {
+class RemotePrintJobParent;
+}
 }
 
 #define NS_IDEVICE_CONTEXT_SPEC_IID   \
@@ -79,7 +83,8 @@ public:
    NS_IMETHOD BeginPage() = 0;
    NS_IMETHOD EndPage() = 0;
 
-   NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath) = 0;
+  NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath,
+    mozilla::layout::RemotePrintJobParent* aRemotePrintJobParent = nullptr) = 0;
 };
 
 NS_DEFINE_STATIC_IID_ACCESSOR(nsIDeviceContextSpec,

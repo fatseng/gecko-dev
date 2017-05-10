@@ -29,7 +29,9 @@ public:
     NS_IMETHOD BeginPage() override { return NS_OK; }
     NS_IMETHOD EndPage() override { return NS_OK; }
 
-    NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath) override;
+    NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath,
+      mozilla::layout::RemotePrintJobParent* aRemotePrintJobParent = nullptr
+      ) override;
 
 private:
     nsCOMPtr<nsIPrintSettings> mPrintSettings;

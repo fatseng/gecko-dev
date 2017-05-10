@@ -30,8 +30,9 @@ class nsDeviceContextSpecProxy final : public nsIDeviceContextSpec
 public:
   NS_DECL_ISUPPORTS
 
-  NS_IMETHOD Init(nsIWidget* aWidget, nsIPrintSettings* aPrintSettings,
-                 bool aIsPrintPreview) final;
+  NS_IMETHOD Init(nsIWidget* aWidget,
+                  nsIPrintSettings* aPrintSettings,
+                  bool aIsPrintPreview) final;
 
   virtual already_AddRefed<PrintTarget> MakePrintTarget() final;
 
@@ -54,7 +55,9 @@ public:
 
   NS_IMETHOD EndPage() final;
 
-  NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath) final;
+  NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath,
+    mozilla::layout::RemotePrintJobParent* aRemotePrintJobParent = nullptr
+    ) final;
 
 private:
   ~nsDeviceContextSpecProxy() {}

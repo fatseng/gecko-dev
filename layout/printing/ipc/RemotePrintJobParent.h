@@ -13,6 +13,7 @@
 #include "nsCOMPtr.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/UniquePtr.h"
+#include "nsIDeviceContextSpec.h"
 
 class nsDeviceContext;
 class nsIPrintSettings;
@@ -78,6 +79,7 @@ private:
   RefPtr<nsDeviceContext> mPrintDeviceContext;
   UniquePtr<PrintTranslator> mPrintTranslator;
   nsCOMArray<nsIWebProgressListener> mPrintProgressListeners;
+  nsCOMPtr<nsIDeviceContextSpec> mPDFDeviceContextSpec;
 };
 
 } // namespace layout

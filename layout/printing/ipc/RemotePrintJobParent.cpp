@@ -15,7 +15,6 @@
 #include "nsComponentManagerUtils.h"
 #include "nsDirectoryServiceUtils.h"
 #include "nsDeviceContext.h"
-#include "nsIDeviceContextSpec.h"
 #include "nsIPrintSettings.h"
 #include "nsIWebProgressListener.h"
 #include "PrintTranslator.h"
@@ -146,9 +145,28 @@ RemotePrintJobParent::PrintPage(const nsCString& aPageFileName)
 mozilla::ipc::IPCResult
 RemotePrintJobParent::RecvPrintPDF(const nsString& aPDFFilePath)
 {
-  // TODO: Actually print the PDF before we call SendDonePrintingPDF()
-  // Fixed in a later patch.
-  Unused << SendDonePrintingPDF();
+  nsresult rv;
+  mPDFDeviceContextSpec =
+    do_CreateInstance("@mozilla.org/gfx/devicecontextspec;1", &rv);
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    Unused << SendAbortPrint(rv);
+    Unused << Send__delete__(this);
+    return IPC_OK();
+  }
+
+  rv = mPDFDeviceContextSpec->Init(nullptr, mPrintSettings, false);
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    Unused << SendAbortPrint(rv);
+    Unused << Send__delete__(this);
+    return IPC_OK();
+  }
+
+  rv = mPDFDeviceContextSpec->PrintPDF(aPDFFilePath, this);
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    Unused << SendAbortPrint(rv);
+    Unused << Send__delete__(this);
+    return IPC_OK();
+  }
 
   return IPC_OK();
 }
@@ -246,6 +264,7 @@ RemotePrintJobParent::~RemotePrintJobParent()
 void
 RemotePrintJobParent::ActorDestroy(ActorDestroyReason aWhy)
 {
+  mPDFDeviceContextSpec = nullptr;
 }
 
 } // namespace layout

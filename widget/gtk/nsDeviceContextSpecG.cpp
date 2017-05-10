@@ -40,6 +40,7 @@ using mozilla::gfx::IntSize;
 using mozilla::gfx::PrintTarget;
 using mozilla::gfx::PrintTargetPDF;
 using mozilla::gfx::PrintTargetPS;
+using mozilla::layout;
 
 static LazyLogModule sDeviceContextSpecGTKLog("DeviceContextSpecGTK");
 /* Macro to make lines shorter */
@@ -347,7 +348,8 @@ NS_IMETHODIMP nsDeviceContextSpecGTK::EndDocument()
   }
   return NS_OK;
 }
-NS_IMETHODIMP nsDeviceContextSpecGTK::PrintPDF(const nsAString& aPDFFilePath)
+NS_IMETHODIMP nsDeviceContextSpecGTK::PrintPDF(const nsAString& aPDFFilePath,
+    RemotePrintJobParent* aRemotePrintJobParent /* = nullptr */)
 {
   NS_NOTYETIMPLEMENTED("Doesn't implement yet, please write me");
   return NS_ERROR_NOT_IMPLEMENTED;

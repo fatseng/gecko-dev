@@ -17,7 +17,9 @@ public:
 
     nsDeviceContextSpecX();
 
-    NS_IMETHOD Init(nsIWidget *aWidget, nsIPrintSettings* aPS, bool aIsPrintPreview) override;
+    NS_IMETHOD Init(nsIWidget *aWidget,
+                    nsIPrintSettings* aPS,
+                    bool aIsPrintPreview) override;
     virtual already_AddRefed<PrintTarget> MakePrintTarget() final;
     NS_IMETHOD BeginDocument(const nsAString& aTitle,
                              const nsAString& aPrintToFileName,
@@ -31,7 +33,9 @@ public:
       return NS_OK;
     };
 
-    NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath) override;
+    NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath,
+      mozilla::layout::RemotePrintJobParent* aRemotePrintJobParent = nullptr
+      ) override;
 
     void GetPaperRect(double* aTop, double* aLeft, double* aBottom, double* aRight);
 

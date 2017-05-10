@@ -33,11 +33,13 @@ public:
   NS_IMETHOD BeginPage() override { return NS_OK; }
   NS_IMETHOD EndPage() override { return NS_OK; }
 
-  NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath) override {
-    return NS_ERROR_NOT_IMPLEMENTED;
-  }
+  NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath,
+    mozilla::layout::RemotePrintJobParent* aRemotePrintJobParent = nullptr
+    ) override;
 
-  NS_IMETHOD Init(nsIWidget* aWidget, nsIPrintSettings* aPS, bool aIsPrintPreview) override;
+  NS_IMETHOD Init(nsIWidget* aWidget,
+                  nsIPrintSettings* aPS,
+                  bool aIsPrintPreview) override;
 
   float GetDPI() final;
 
@@ -63,12 +65,18 @@ protected:
 
   virtual ~nsDeviceContextSpecWin();
 
-  wchar_t*      mDriverName;
-  wchar_t*      mDeviceName;
-  LPDEVMODEW mDevMode;
+  wchar_t*    mDriverName;
+  wchar_t*    mDeviceName;
+  LPDEVMODEW  mDevMode;
+  HDC         mDC;
 
   nsCOMPtr<nsIPrintSettings> mPrintSettings;
   int16_t mOutputFormat = nsIPrintSettings::kOutputFormatNative;
+
+  void  PDFPrintjob();
+
+  nsString mPDFFilePath;
+  mozilla::layout::RemotePrintJobParent* mRemotePrintJobParent;
 };
 
 

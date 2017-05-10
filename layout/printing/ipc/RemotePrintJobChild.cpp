@@ -75,6 +75,7 @@ RemotePrintJobChild::RecvDonePrintingPDF()
   MOZ_ASSERT(mPrintEngine);
 
   mPrintEngine->DonePrintingPDF();
+  Unused << SendFinalizePrint();
   return IPC_OK();
 }
 

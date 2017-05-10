@@ -33,6 +33,7 @@
 #include "nsIDOMWindow.h"
 #include "mozilla/Services.h"
 #include "nsWindowsHelpers.h"
+#include "mozilla/layout/RemotePrintJobParent.h"
 
 #include "mozilla/gfx/Logging.h"
 
@@ -41,6 +42,7 @@ static mozilla::LazyLogModule kWidgetPrintingLogMod("printing-widget");
 
 using namespace mozilla;
 using namespace mozilla::gfx;
+using namespace mozilla::layout;
 
 static const wchar_t kDriverName[] =  L"WINSPOOL";
 
@@ -89,7 +91,8 @@ nsDeviceContextSpecWin::nsDeviceContextSpecWin()
   mDriverName    = nullptr;
   mDeviceName    = nullptr;
   mDevMode       = nullptr;
-
+  mDC            = nullptr;
+  mRemotePrintJobParent = nullptr;
 }
 
 
@@ -102,6 +105,9 @@ nsDeviceContextSpecWin::~nsDeviceContextSpecWin()
   SetDeviceName(nullptr);
   SetDriverName(nullptr);
   SetDevMode(nullptr);
+  if (mDC) {
+    ::DeleteDC(mDC);
+  }
 
   nsCOMPtr<nsIPrintSettingsWin> psWin(do_QueryInterface(mPrintSettings));
   if (psWin) {
@@ -267,6 +273,57 @@ already_AddRefed<PrintTarget> nsDeviceContextSpecWin::MakePrintTarget()
   }
 
   return nullptr;
+}
+
+void
+nsDeviceContextSpecWin::PDFPrintjob()
+{
+  int result = ::StartPage(mDC);
+  if (result > 0) {
+    // XXX: print EMF here, will fix in Bug 1345786
+    ::EndPage(mDC);
+  }
+
+  ::EndDoc(mDC);
+  if (mRemotePrintJobParent) {
+    mRemotePrintJobParent->SendDonePrintingPDF();
+    mRemotePrintJobParent = nullptr;
+  }
+}
+
+NS_IMETHODIMP
+nsDeviceContextSpecWin::PrintPDF(const nsAString& aPDFFilePath,
+  RemotePrintJobParent* aRemotePrintJobParent /* = nullptr */)
+{
+  mPDFFilePath = aPDFFilePath;
+  mRemotePrintJobParent = aRemotePrintJobParent;
+
+  if (mDevMode) {
+    NS_WARNING_ASSERTION(mDriverName, "No driver!");
+    mDC = ::CreateDCW(mDriverName, mDeviceName, nullptr, mDevMode);
+    if (!mDC) {
+      gfxCriticalError(gfxCriticalError::DefaultOptions(false))
+        << "Failed to create device context in GetSurfaceForPrinter";
+      return NS_ERROR_GFX_PRINTER_NAME_NOT_FOUND;
+    }
+  } else {
+    return NS_ERROR_FAILURE;
+  }
+
+  DOCINFOW di;
+  di.cbSize = sizeof(di);
+  di.lpszDocName = L"Mozilla Document";
+  di.lpszOutput = nullptr;
+  di.lpszDatatype = nullptr;
+  di.fwType = 0;
+
+  int result = ::StartDocW(mDC, &di);
+  if (result <= 0) {
+    return NS_ERROR_FAILURE;
+  }
+
+  return NS_DispatchToCurrentThread(
+    NewRunnableMethod(this, &nsDeviceContextSpecWin::PDFPrintjob));
 }
 
 float
