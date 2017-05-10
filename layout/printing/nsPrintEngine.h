@@ -210,6 +210,12 @@ public:
     mDisallowSelectionPrint = aDisallowSelectionPrint;
   }
 
+  bool HavePrintData()
+  {
+    return !!mPrt;
+  }
+
+
 protected:
   ~nsPrintEngine();
 

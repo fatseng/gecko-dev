@@ -4172,12 +4172,41 @@ nsDocumentViewer::ExitPrintPreview()
 // Enumerate all the documents for their titles
 NS_IMETHODIMP
 nsDocumentViewer::EnumerateDocumentNames(uint32_t* aCount,
-                                           char16_t*** aResult)
+                                         char16_t*** aResult)
 {
 #ifdef NS_PRINTING
   NS_ENSURE_ARG(aCount);
   NS_ENSURE_ARG_POINTER(aResult);
-  NS_ENSURE_TRUE(mPrintEngine, NS_ERROR_FAILURE);
+
+  // Check nsPrintData here because nsPrintData wasn't allocated while calling PrintPDF
+  if (!mPrintEngine || !mPrintEngine->HavePrintData()) {
+    *aCount = 0;
+    *aResult = nullptr;
+
+    nsAutoString docTitleStr;
+    nsAutoString docURLStr;
+
+    NS_ENSURE_TRUE(mDocument, NS_ERROR_FAILURE);
+    mDocument->GetTitle(docTitleStr);
+    nsresult rv = mDocument->GetDocumentURI(docURLStr);
+    if (NS_FAILED(rv)) {
+      NS_WARNING("Failed to get URI");
+    }
+
+    if (docTitleStr.IsEmpty() && !docURLStr.IsEmpty()) {
+      docTitleStr = docURLStr;
+    }
+
+    char16_t** array   = (char16_t**) moz_xmalloc(sizeof(char16_t*));
+    if (!array) {
+      return NS_ERROR_OUT_OF_MEMORY;
+    }
+
+    array[0] = ToNewUnicode(docTitleStr);
+    *aCount  = 1;
+    *aResult = array;
+    return NS_OK;
+  }
 
   return mPrintEngine->EnumerateDocumentNames(aCount, aResult);
 #else
@@ -4185,7 +4214,7 @@ nsDocumentViewer::EnumerateDocumentNames(uint32_t* aCount,
 #endif
 }
 
-NS_IMETHODIMP 
+NS_IMETHODIMP
 nsDocumentViewer::GetIsFramesetFrameSelected(bool *aIsFramesetFrameSelected)
 {
 #ifdef NS_PRINTING
