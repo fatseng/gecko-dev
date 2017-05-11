@@ -82,6 +82,9 @@ public:
   virtual mozilla::ipc::PChildToParentStreamChild*
   SendPChildToParentStreamConstructor(mozilla::ipc::PChildToParentStreamChild*) = 0;
 
+  virtual already_AddRefed<nsIEventTarget>
+  GetEventTargetFor(TabChild* aTabChild) = 0;
+
 protected:
   virtual jsipc::PJavaScriptChild* AllocPJavaScriptChild();
   virtual bool DeallocPJavaScriptChild(jsipc::PJavaScriptChild*);
@@ -131,6 +134,8 @@ protected:
                                                    InfallibleTArray<jsipc::CpowEntry>&& aCpows,
                                                    const IPC::Principal& aPrincipal,
                                                    const ClonedMessageData& aData);
+
+  static already_AddRefed<nsIEventTarget> GetConstructedEventTarget(const IPC::Message& aMsg);
 };
 
 NS_DEFINE_STATIC_IID_ACCESSOR(nsIContentChild, NS_ICONTENTCHILD_IID)
