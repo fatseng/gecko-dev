@@ -52,6 +52,11 @@ PDFiumEngineShim::InitSymbolsAndLibrary()
   if (!mFPDF_LoadMemDocument) {
     return false;
   }
+  mFPDF_LoadDocument = (FPDF_LoadDocument_Pfn)PR_FindFunctionSymbol(
+    mPRLibrary, "FPDF_LoadDocument");
+  if (!mFPDF_LoadDocument) {
+    return false;
+  }
   mFPDF_CloseDocument = (FPDF_CloseDocument_Pfn)PR_FindFunctionSymbol(
     mPRLibrary, "FPDF_CloseDocument");
   if (!mFPDF_CloseDocument) {
@@ -119,12 +124,25 @@ PDFiumEngineShim::LoadMemDocument(const void* aDataBuf,
   return mFPDF_LoadMemDocument(aDataBuf, aSize, aPassword);
 }
 
+FPDF_DOCUMENT
+PDFiumEngineShim::LoadDocument(FPDF_STRING file_path,
+                               FPDF_BYTESTRING aPassword)
+{
+  if (!mInitialized) {
+    if (!InitSymbolsAndLibrary()) {
+      return nullptr;
+    }
+  }
+
+  return mFPDF_LoadDocument(file_path, aPassword);
+}
+
 void
 PDFiumEngineShim::CloseDocument(FPDF_DOCUMENT aDocument)
 {
   MOZ_ASSERT(mInitialized);
   mFPDF_CloseDocument(aDocument);
-  //DestroyLibrary();
+  DestroyLibrary();
   mInitialized = false;
 }
 
