@@ -18,6 +18,11 @@
 #include "nsIPrintSettings.h"
 #include "nsIWebProgressListener.h"
 #include "PrintTranslator.h"
+#include "mozilla/dom/ContentParent.h"
+#include "mozilla/plugins/PPAPIJSProcessParent.h"
+
+using namespace mozilla::dom;
+using namespace mozilla::plugins;
 
 namespace mozilla {
 namespace layout {
@@ -161,7 +166,9 @@ RemotePrintJobParent::RecvPrintPDF(const nsString& aPDFFilePath)
     return IPC_OK();
   }
 
-  rv = mPDFDeviceContextSpec->PrintPDF(aPDFFilePath, this);
+  uint32_t pluginID = ContentParent::GetJSPluginID();
+  PPAPIJSPluginParent* jsParent = PPAPIJSProcess::GetPPAPIJSPluginParent(pluginID);
+  rv = mPDFDeviceContextSpec->PrintPDF(aPDFFilePath, this, jsParent);
   if (NS_WARN_IF(NS_FAILED(rv))) {
     Unused << SendAbortPrint(rv);
     Unused << Send__delete__(this);

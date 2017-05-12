@@ -5009,7 +5009,6 @@ dump(`callFromJSON: < ${JSON.stringify(call)}\n`);
         return;
       }
       let buffer = PP_Resource.lookup(bufferId);
-
       // Save PDF to file
       let file = Services.dirsvc.get(PRINT_CONTENT_TEMP_KEY, Ci.nsIFile);
       file.append(PRINT_FILE_NAME);

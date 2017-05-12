@@ -34,8 +34,8 @@ public:
   NS_IMETHOD EndPage() override { return NS_OK; }
 
   NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath,
-    mozilla::layout::RemotePrintJobParent* aRemotePrintJobParent = nullptr
-    ) override;
+    mozilla::layout::RemotePrintJobParent* aRemotePrintJobParent = nullptr,
+    mozilla::plugins::PPAPIJSPluginParent* aJSParent = nullptr) override;
 
   NS_IMETHOD Init(nsIWidget* aWidget,
                   nsIPrintSettings* aPS,
@@ -57,6 +57,8 @@ public:
   // helper functions
   nsresult GetDataFromPrinter(char16ptr_t aName, nsIPrintSettings* aPS = nullptr);
 
+  bool SetPDFPageCount(int aPageCount);
+
 protected:
 
   void SetDeviceName(char16ptr_t aDeviceName);
@@ -77,6 +79,10 @@ protected:
 
   nsString mPDFFilePath;
   mozilla::layout::RemotePrintJobParent* mRemotePrintJobParent;
+  mozilla::plugins::PPAPIJSPluginParent* mJSParent;
+  int mPDFPageCount;
+  int mPageNum;
+  int16_t mPDFJobID;
 };
 
 

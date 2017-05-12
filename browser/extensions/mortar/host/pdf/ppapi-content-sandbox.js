@@ -122,10 +122,12 @@ mm.addMessageListener("ppapipdf.js:getPrintSettings", () => {
   let webBrowserPrint =
     containerWindow.QueryInterface(Ci.nsIInterfaceRequestor).
     getInterface(Ci.nsIWebBrowserPrint);
+/*
   let PPSVC = Cc["@mozilla.org/embedcomp/printingprompt-service;1"].
               getService(Ci.nsIPrintingPromptService);
   PPSVC.showPrintDialog(containerWindow, webBrowserPrint, printSettings);
-
+*/
+  webBrowserPrint.showPrintDialog(printSettings);
   // XPCOM object should not in general be sent across processes. So we have to
   // copy out only the info PDFium needed and send it back to jsplugin process
   // for getting PDF file.
@@ -151,32 +153,37 @@ mm.addMessageListener("ppapipdf.js:getPrintSettings", () => {
   trimPrintSettings.printRange = printSettings.printRange;
   trimPrintSettings.startPageRange = printSettings.startPageRange;
   trimPrintSettings.endPageRange = printSettings.endPageRange;
-
   mm.sendAsyncMessage("ppapipdf.js:printsettingschanged", {
     trimPrintSettings });
 });
 
 mm.addMessageListener("ppapipdf.js:printPDF", ({ data }) => {
+  dump("\n\n\nFarmer ppapipdf.js:printPDF\n\n\n")
   let file = Services.dirsvc.get(data.contentTempKey, Ci.nsIFile);
   file.append(data.fileName);
+dump(file.path);
+/*
   if (!file.exists()) {
+    dump("\n\n\nFarmer file.exists\n\n\n")
     return;
   }
-
+*/
   let webBrowserPrint =
     containerWindow.QueryInterface(Ci.nsIInterfaceRequestor).
     getInterface(Ci.nsIWebBrowserPrint);
   if (!webBrowserPrint || !webBrowserPrint.printPDF) {
-    file.remove(false);
+    dump("\n\n\nFarmer webBrowserPrint\n\n\n");
+    //file.remove(false);
     return;
   }
-
-  webBrowserPrint.printPDF(file.path, printSettings)
+dump("\n\n\nFarmer printPDF\n\n\n");
+  //webBrowserPrint.printPDF(file.path, printSettings
+  webBrowserPrint.printPDF("C:\\Users\\Farmer Tseng\\Documents\\yahoo.pdf")
   .then(() => {
-    file.remove(false);
+    //file.remove(false);
   })
   .catch(() => {
-    file.remove(false);
+    //file.remove(false);
   });
 });
 

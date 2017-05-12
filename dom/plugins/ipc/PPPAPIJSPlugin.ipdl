@@ -10,8 +10,17 @@ namespace plugins {
 
 sync protocol PPPAPIJSPlugin
 {
+parent:
+
+  async NotifyPageCount(uint16_t aID, int aPageCount);
+  async PrintEMF(uint16_t aID, nsString aFilePath, int aPageNum);
+
 child:
   async Bridged(Endpoint<PPPAPIJSChild> endpoint);
+
+  async StartPrint(uint16_t aID, nsString aFilePath);
+  async ConvertPDFToEMF(uint16_t aID, int aPageNum, int aPageWidth, int aPageHeight);
+  async FinishPrint(uint16_t aID);
 };
 
 } // namespace plugins

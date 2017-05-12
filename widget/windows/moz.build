@@ -20,6 +20,7 @@ EXPORTS.mozilla.widget += [
     'CompositorWidgetChild.h',
     'CompositorWidgetParent.h',
     'InProcessWinCompositorWidget.h',
+    'nsDeviceContextSpecWin.h',
     'PDFiumEngineShim.h',
     'PDFViaEMFPrintHelper.h',
     'WinCompositorWidget.h',

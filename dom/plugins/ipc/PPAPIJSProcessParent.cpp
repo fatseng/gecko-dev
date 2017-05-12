@@ -15,6 +15,10 @@
 #include "nsIObserverService.h"
 #include "private/pprio.h"
 
+#ifdef XP_WIN
+#include "mozilla/widget/nsDeviceContextSpecWin.h"
+#endif
+
 using mozilla::ipc::FileDescriptor;
 
 namespace mozilla {
@@ -150,11 +154,46 @@ PPAPIJSPluginParent::ActorDestroy(ActorDestroyReason aWhy)
   sPPAPIPlugins[mJSPluginID] = nullptr;
 }
 
+ipc::IPCResult
+PPAPIJSPluginParent::RecvNotifyPageCount(const uint16_t& aID, const int& aPageCount)
+{
+  printf("---RecvNotifyPageCount---\n");
+
+  return IPC_OK();
+}
+
+ipc::IPCResult
+PPAPIJSPluginParent::RecvPrintEMF(const uint16_t& aID, const nsString& aFilePath, const int& aPageNum)
+{
+  printf("---RecvPrintEMF---\n");
+  return IPC_OK();
+}
+
 void
 PPAPIJSPluginParent::DeallocPPPAPIJSPluginParent()
 {
   Delete();
 }
+
+#ifdef XP_WIN
+static std::vector<nsDeviceContextSpecWin*> sDeviceContextSpec;
+
+int16_t
+PPAPIJSPluginParent::SetDeviceContextSpecWin(nsDeviceContextSpecWin* aDeviceContextSpec)
+{
+  uint16_t i = 0;
+  for (; i < sDeviceContextSpec.size(); ++i) {
+    if (!sDeviceContextSpec[i]) {
+      break;
+    }
+  }
+  if (i == sDeviceContextSpec.size()) {
+    sDeviceContextSpec.resize(i + 1);
+  }
+  sDeviceContextSpec[i] = aDeviceContextSpec;
+  return i;
+}
+#endif
 
 static PPAPIJSProcess* gPPAPIJSProcess = nullptr;
 

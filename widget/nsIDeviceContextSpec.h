@@ -20,6 +20,10 @@ class PrintTarget;
 namespace layout {
 class RemotePrintJobParent;
 }
+
+namespace plugins {
+class PPAPIJSPluginParent;
+}
 }
 
 #define NS_IDEVICE_CONTEXT_SPEC_IID   \
@@ -84,7 +88,8 @@ public:
    NS_IMETHOD EndPage() = 0;
 
   NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath,
-    mozilla::layout::RemotePrintJobParent* aRemotePrintJobParent = nullptr) = 0;
+    mozilla::layout::RemotePrintJobParent* aRemotePrintJobParent = nullptr,
+    mozilla::plugins::PPAPIJSPluginParent* aJSParent = nullptr) = 0;
 };
 
 NS_DEFINE_STATIC_IID_ACCESSOR(nsIDeviceContextSpec,

@@ -56,8 +56,8 @@ public:
   NS_IMETHOD EndPage() final;
 
   NS_IMETHOD PrintPDF(const nsAString& aPDFFilePath,
-    mozilla::layout::RemotePrintJobParent* aRemotePrintJobParent = nullptr
-    ) final;
+    mozilla::layout::RemotePrintJobParent* aRemotePrintJobParent = nullptr,
+    mozilla::plugins::PPAPIJSPluginParent* aJSParent = nullptr) final;
 
 private:
   ~nsDeviceContextSpecProxy() {}

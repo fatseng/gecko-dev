@@ -126,9 +126,11 @@ static const char kPrintingPromptService[] = "@mozilla.org/embedcomp/printingpro
 #include "nsVariant.h"
 #include "mozilla/StyleSetHandle.h"
 #include "mozilla/StyleSetHandleInlines.h"
+#include "mozilla/plugins/PPAPIJSProcessParent.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
+using namespace mozilla::plugins;
 
 //-----------------------------------------------------
 // PR LOGGING
@@ -856,7 +858,9 @@ nsPrintEngine::PrintPDF(const nsAString&  aPDFFilePath)
 
   SetIsPrinting(true);
 
-  return mDevspec->PrintPDF(aPDFFilePath);
+  uint32_t pluginID = ContentParent::GetJSPluginID();
+  PPAPIJSPluginParent* jsParent = PPAPIJSProcess::GetPPAPIJSPluginParent(pluginID);
+  return mDevspec->PrintPDF(aPDFFilePath, nullptr, jsParent);
 }
 
 //----------------------------------------------------------------------------------

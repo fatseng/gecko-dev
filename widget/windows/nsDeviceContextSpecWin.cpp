@@ -37,12 +37,15 @@
 
 #include "mozilla/gfx/Logging.h"
 
+#include "mozilla/plugins/PPAPIJSProcessParent.h"
+
 static mozilla::LazyLogModule kWidgetPrintingLogMod("printing-widget");
 #define PR_PL(_p1)  MOZ_LOG(kWidgetPrintingLogMod, mozilla::LogLevel::Debug, _p1)
 
 using namespace mozilla;
 using namespace mozilla::gfx;
 using namespace mozilla::layout;
+using namespace mozilla::plugins;
 
 static const wchar_t kDriverName[] =  L"WINSPOOL";
 
@@ -93,6 +96,7 @@ nsDeviceContextSpecWin::nsDeviceContextSpecWin()
   mDevMode       = nullptr;
   mDC            = nullptr;
   mRemotePrintJobParent = nullptr;
+  mJSParent      = nullptr;
 }
 
 
@@ -293,21 +297,32 @@ nsDeviceContextSpecWin::PDFPrintjob()
 
 NS_IMETHODIMP
 nsDeviceContextSpecWin::PrintPDF(const nsAString& aPDFFilePath,
-  RemotePrintJobParent* aRemotePrintJobParent /* = nullptr */)
+  RemotePrintJobParent* aRemotePrintJobParent /* = nullptr */,
+  PPAPIJSPluginParent* aJSParent /* = nullptr */)
 {
   mPDFFilePath = aPDFFilePath;
   mRemotePrintJobParent = aRemotePrintJobParent;
+  mJSParent = aJSParent;
+  if (mJSParent) {
+    mPDFJobID = mJSParent->SetDeviceContextSpecWin(this);
+    mJSParent->SendStartPrint(mPDFJobID, mPDFFilePath);
+  }
+  return NS_OK;
+}
 
+bool
+nsDeviceContextSpecWin::SetPDFPageCount(int aPageCount)
+{
   if (mDevMode) {
     NS_WARNING_ASSERTION(mDriverName, "No driver!");
     mDC = ::CreateDCW(mDriverName, mDeviceName, nullptr, mDevMode);
     if (!mDC) {
       gfxCriticalError(gfxCriticalError::DefaultOptions(false))
         << "Failed to create device context in GetSurfaceForPrinter";
-      return NS_ERROR_GFX_PRINTER_NAME_NOT_FOUND;
+      return false;
     }
   } else {
-    return NS_ERROR_FAILURE;
+    return false;
   }
 
   DOCINFOW di;
@@ -319,11 +334,20 @@ nsDeviceContextSpecWin::PrintPDF(const nsAString& aPDFFilePath,
 
   int result = ::StartDocW(mDC, &di);
   if (result <= 0) {
-    return NS_ERROR_FAILURE;
+    if (mRemotePrintJobParent) {
+      mRemotePrintJobParent->SendDonePrintingPDF();
+      mRemotePrintJobParent = nullptr;
+    }
+    return false;
   }
 
-  return NS_DispatchToCurrentThread(
+  nsresult rv = NS_DispatchToCurrentThread(
     NewRunnableMethod(this, &nsDeviceContextSpecWin::PDFPrintjob));
+  if (NS_FAILED(rv)) {
+    return false;
+  }
+
+  return true;
 }
 
 float

@@ -12,6 +12,10 @@
 #include "nsIPPAPIJSProcess.h"
 #include "mozilla/plugins/PPPAPIJSPluginParent.h"
 
+#ifdef XP_WIN
+class nsDeviceContextSpecWin;
+#endif
+
 namespace mozilla {
 namespace plugins {
 
@@ -29,9 +33,19 @@ public:
   virtual void ActorDestroy(ActorDestroyReason aWhy) override;
   virtual void DeallocPPPAPIJSPluginParent() override;
 
+  virtual ipc::IPCResult RecvNotifyPageCount(const uint16_t& aID,
+                                             const int& aPageCount) override;
+  virtual ipc::IPCResult RecvPrintEMF(const uint16_t& aID,
+                                      const nsString& aFilePath,
+                                      const int& aPageNum) override;
+#ifdef XP_WIN
+  int16_t SetDeviceContextSpecWin(nsDeviceContextSpecWin* aDeviceContextSpec);
+#endif
+
 private:
   uint32_t mJSPluginID;
   nsAutoPtr<ipc::GeckoChildProcessHost> mProcess;
+  nsDeviceContextSpecWin* mPDFDeviceContextSpec;
 };
 
 class PPAPIJSProcess : public nsIPPAPIJSProcess,

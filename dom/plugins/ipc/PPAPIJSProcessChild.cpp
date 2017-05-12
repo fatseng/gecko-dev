@@ -11,6 +11,15 @@
 #include "mozilla/ipc/IOThreadChild.h"
 #include "mozilla/plugins/PPPAPIJSPluginChild.h"
 
+#ifdef XP_WIN
+#include "mozilla/widget/PDFViaEMFPrintHelper.h"
+#include "nsPrintfCString.h"
+#include "nsIFile.h"
+#include "nsLocalFile.h"
+
+using namespace mozilla::widget;
+#endif
+
 namespace mozilla {
 namespace plugins {
 
@@ -162,7 +171,26 @@ class PPAPIJSPluginChild : public PPPAPIJSPluginChild
 {
 public:
   virtual ipc::IPCResult RecvBridged(Endpoint<PPPAPIJSChild>&& endpoint) override;
+
+  virtual ipc::IPCResult RecvStartPrint(const uint16_t& aID,
+                                        const nsString& aFilePath) override;
+
+  virtual ipc::IPCResult RecvConvertPDFToEMF(const uint16_t& aID,
+                                             const int& aPageNum,
+                                             const int& aPageWidth,
+                                             const int& aPageHeight) override;
+  virtual ipc::IPCResult RecvFinishPrint(const uint16_t& aID) override;
+
   static PPAPIJSPluginChild* sInstance;
+#ifdef XP_WIN
+  void InitPrintHelper(PRLibrary* aPluginLibrary);
+#endif
+
+protected:
+#ifdef XP_WIN
+  UniquePtr<PDFViaEMFPrintHelper> mPDFPrintHelper;
+  nsString mFilePath;
+#endif
 };
 
 PPAPIJSPluginChild* PPAPIJSPluginChild::sInstance;
@@ -175,6 +203,73 @@ PPAPIJSPluginChild::RecvBridged(Endpoint<PPPAPIJSChild>&& endpoint)
   return IPC_OK();
 }
 
+ipc::IPCResult
+PPAPIJSPluginChild::RecvStartPrint(const uint16_t& aID, const nsString& aFilePath)
+{
+#ifdef XP_WIN
+  printf_stderr("\nPPAPIJSPluginChild::RecvStartPrint\n\n");
+
+  RefPtr<nsLocalFile> localFile = new nsLocalFile;
+  localFile->InitWithPath(aFilePath);
+
+  nsresult rv = mPDFPrintHelper->OpenDocument(localFile);
+  printf_stderr("\n\n\nFarmer RecvNotifyPrint =============== 3\n\n\n");
+   if (NS_FAILED(rv)) {
+     return IPC_OK();
+   }
+
+  int mTotal_page_num = mPDFPrintHelper->GetPageCount();
+  printf_stderr("\n\n\nFarmer RecvNotifyPrint =============== 4\n\n\n");
+  if (mTotal_page_num <= 0) {
+    mPDFPrintHelper = nullptr;
+    return IPC_OK();
+  }
+
+  int32_t end = aFilePath.RFind("\\");
+  nsString temp;
+  aFilePath.Left(temp, end);
+  temp.Append(NS_ConvertUTF8toUTF16("\\test.emf").get());
+
+  int page_width = 4961, page_height = 7016;
+  mPDFPrintHelper->DrawPageToFile(temp.get(), 2, page_width, page_height);
+  //mPDFPrintHelper->DrawPageToFile(L"C:\\Users\\user\\AppData\\LocalLow\\Mozilla\\ChromiumPrinting2.emf", 2, page_width, page_height);
+  mPDFPrintHelper->CloseDocument();
+  mPDFPrintHelper = nullptr;
+
+  Unused << SendNotifyPageCount(0, mTotal_page_num);
+#endif
+  return IPC_OK();
+}
+
+ipc::IPCResult
+PPAPIJSPluginChild::RecvConvertPDFToEMF(const uint16_t& aID,
+                                        const int& aPageNum,
+                                        const int& aPageWidth,
+                                        const int& aPageHeight)
+{
+#ifdef XP_WIN
+
+#endif
+  return IPC_OK();
+}
+
+ipc::IPCResult
+PPAPIJSPluginChild::RecvFinishPrint(const uint16_t& aID)
+{
+#ifdef XP_WIN
+
+#endif
+  return IPC_OK();
+}
+
+#ifdef XP_WIN
+void
+PPAPIJSPluginChild::InitPrintHelper(PRLibrary* aPluginLibrary)
+{
+  mPDFPrintHelper = MakeUnique<PDFViaEMFPrintHelper>(aPluginLibrary);
+}
+#endif
+
 bool
 PPAPIJSProcessChild::Init(int aArgc, char* aArgv[])
 {
@@ -183,7 +278,6 @@ PPAPIJSProcessChild::Init(int aArgc, char* aArgv[])
 
   nsresult rv = nsThreadManager::get().Init();
   if (NS_WARN_IF(NS_FAILED(rv))) {
-    printf_stderr("Farmer PPAPIJSProcessChild::Init -1\n");
     return false;
   }
 
@@ -193,7 +287,6 @@ PPAPIJSProcessChild::Init(int aArgc, char* aArgv[])
   PPAPIJSPluginChild::sInstance = new PPAPIJSPluginChild();
   if (!PPAPIJSPluginChild::sInstance->Open(ipc::IOThreadChild::channel(), ParentPid(),
                                            ipc::IOThreadChild::message_loop())) {
-    printf_stderr("Farmer PPAPIJSProcessChild::Init -2\n");
     return false;
   }
 
@@ -216,10 +309,11 @@ PPAPIJSProcessChild::Init(int aArgc, char* aArgv[])
   }
 
   if (!mRPCLibrary || !mPluginLibrary) {
-    printf_stderr("Farmer PPAPIJSProcessChild::Init -3\n");
     return false;
   }
-
+#ifdef XP_WIN
+  PPAPIJSPluginChild::sInstance->InitPrintHelper(mPluginLibrary);
+#endif
   Initialize_t Initialize = (Initialize_t)PR_FindFunctionSymbol(mRPCLibrary, "Initialize");
   sToPlugin = (ToPlugin_t)PR_FindFunctionSymbol(mRPCLibrary, "CallFromJSON");
 
