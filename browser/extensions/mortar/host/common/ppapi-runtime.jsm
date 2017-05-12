@@ -1702,7 +1702,7 @@ class PPAPIInstance {
     }
   }
   handleEvent(event) {
-    dump(`EVENT ${event.type}\n`);
+//    dump(`EVENT ${event.type}\n`);
     if ((event.type == "keydown" || event.type == "keyup") &&
         event.keyCode == 224) {
       return;
@@ -1921,15 +1921,15 @@ PPAPIRuntime.prototype = {
     let fn = obj.__interface + "_" + obj.__method;
     let f = this.table[fn];
     if (!f) {
-      dump(
-`Not implemented: ${json}
+//      dump(
+//`Not implemented: ${json}
     /**
      *
      */
-    ${obj.__interface}_${obj.__method}: function(json) {
-    },
+//    ${obj.__interface}_${obj.__method}: function(json) {
+//    },
 
-`);
+//`);
       return null;
     }
     let result = f.call(this, obj);
@@ -2072,17 +2072,17 @@ PPAPIRuntime.prototype = {
 
   call: function(call, sync=false) {
     if (sync) {
-dump(`callFromJSON: > ${JSON.stringify(call)}\n`);
+//dump(`callFromJSON: > ${JSON.stringify(call)}\n`);
       let result = this.process.sendMessage(JSON.stringify(call));
-dump(`callFromJSON: < ${JSON.stringify(call)}\n`);
+//dump(`callFromJSON: < ${JSON.stringify(call)}\n`);
       return result ? JSON.parse(result) : result;
     }
 
     let thread = Services.tm.currentThread;
     thread.dispatch(() => {
-dump(`callFromJSON (async): > ${JSON.stringify(call)}\n`);
+//dump(`callFromJSON (async): > ${JSON.stringify(call)}\n`);
       let result = this.process.sendMessage(JSON.stringify(call));
-dump(`callFromJSON: < ${JSON.stringify(call)}\n`);
+//dump(`callFromJSON: < ${JSON.stringify(call)}\n`);
     }, Ci.nsIThread.DISPATCH_NORMAL);
   },
 
@@ -4954,6 +4954,7 @@ dump(`callFromJSON: < ${JSON.stringify(call)}\n`);
      */
     PPB_PDF_Print: function(json) {
       let instance = this.instances[json.instance];
+
       let pageRangeInfo = instance.pageRangeInfo;
 
       // Query supported formats
@@ -5031,6 +5032,7 @@ dump(`callFromJSON: < ${JSON.stringify(call)}\n`);
       instance.rt.call(new InterfaceMemberCall(
         "PPP_Printing(Dev);0.6", "End", { instance }), true);
       // We need permission for printing PDF file
+
       instance.mm.sendAsyncMessage("ppapipdf.js:printPDF", {
         contentTempKey: PRINT_CONTENT_TEMP_KEY, fileName: PRINT_FILE_NAME });
     },

@@ -32,31 +32,29 @@ public:
   ~PDFViaEMFPrintHelper();
 
   /** Loads the specified PDF file. */
-  NS_IMETHOD OpenDocument(nsIFile *aFile);
+  NS_IMETHOD OpenDocument(nsIFile *aFile, uint16_t aID);
 
   /** Releases document buffer. */
-  void CloseDocument();
+  void CloseDocument(uint16_t aID);
 
-  int GetPageCount() { return mPDFiumEngine->GetPageCount(mPDFDoc); }
+  int GetPageCount(uint16_t aID);
 
   /** Convert specified PDF page to EMF and draw the EMF onto the given DC. */
-  bool DrawPage(HDC aPrinterDC, unsigned int aPageIndex,
+  bool DrawPage(uint16_t aID, HDC aPrinterDC, unsigned int aPageIndex,
                 int aPageWidth, int aPageHeight);
 
   /** Convert specified PDF page to EMF and save it to file. */
-  bool DrawPageToFile(const wchar_t* aFilePath, unsigned int aPageIndex,
-                      int aPageWidth, int aPageHeight);
+  bool DrawPageToFile(uint16_t aID, const wchar_t* aFilePath,
+                      unsigned int aPageIndex, int aPageWidth, int aPageHeight);
 
 private:
 
-  bool LoadPDFDataToBuffer(nsIFile *aFile);
-
-  bool RenderPageToDC(HDC aDC, unsigned int aPageIndex,
+  bool RenderPageToDC(uint16_t aID, HDC aDC, unsigned int aPageIndex,
                       int aPageWidth, int aPageHeight);
 
   UniquePtr<PDFiumEngineShim> mPDFiumEngine;
-  FPDF_DOCUMENT               mPDFDoc;
   PRLibrary*                  mPDFiumLibrary;
+  std::map<uint16_t, FPDF_DOCUMENT> mIDHandlerMap;
 };
 
 } // namespace widget

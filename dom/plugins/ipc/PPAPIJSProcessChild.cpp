@@ -212,14 +212,29 @@ PPAPIJSPluginChild::RecvStartPrint(const uint16_t& aID, const nsString& aFilePat
   RefPtr<nsLocalFile> localFile = new nsLocalFile;
   localFile->InitWithPath(aFilePath);
 
-  nsresult rv = mPDFPrintHelper->OpenDocument(localFile);
+  nsresult rv = mPDFPrintHelper->OpenDocument(localFile, aID);
   printf_stderr("\n\n\nFarmer RecvNotifyPrint =============== 3\n\n\n");
    if (NS_FAILED(rv)) {
      return IPC_OK();
    }
 
-  int mTotal_page_num = mPDFPrintHelper->GetPageCount();
+  int mTotal_page_num = mPDFPrintHelper->GetPageCount(aID);
   printf_stderr("\n\n\nFarmer RecvNotifyPrint =============== 4\n\n\n");
+  if (mTotal_page_num <= 0) {
+    mPDFPrintHelper = nullptr;
+    return IPC_OK();
+  }
+
+  nsAutoString FilePath1(NS_LITERAL_STRING("C:\\Users\\Farmer Tseng\\Documents\\yahoo1.pdf"));
+  RefPtr<nsLocalFile> localFile1 = new nsLocalFile;
+  localFile1->InitWithPath(FilePath1);
+  
+  rv = mPDFPrintHelper->OpenDocument(localFile1, aID+1);
+   if (NS_FAILED(rv)) {
+     return IPC_OK();
+   }
+
+  mTotal_page_num = mPDFPrintHelper->GetPageCount(aID+1);
   if (mTotal_page_num <= 0) {
     mPDFPrintHelper = nullptr;
     return IPC_OK();
@@ -231,12 +246,20 @@ PPAPIJSPluginChild::RecvStartPrint(const uint16_t& aID, const nsString& aFilePat
   temp.Append(NS_ConvertUTF8toUTF16("\\test.emf").get());
 
   int page_width = 4961, page_height = 7016;
-  mPDFPrintHelper->DrawPageToFile(temp.get(), 2, page_width, page_height);
+  mPDFPrintHelper->DrawPageToFile(aID, temp.get(), 2, page_width, page_height);
   //mPDFPrintHelper->DrawPageToFile(L"C:\\Users\\user\\AppData\\LocalLow\\Mozilla\\ChromiumPrinting2.emf", 2, page_width, page_height);
-  mPDFPrintHelper->CloseDocument();
-  mPDFPrintHelper = nullptr;
 
-  Unused << SendNotifyPageCount(0, mTotal_page_num);
+  end = FilePath1.RFind("\\");
+  nsString temp1;
+  FilePath1.Left(temp1, end);
+  temp1.Append(NS_ConvertUTF8toUTF16("\\test1.emf").get());
+
+  mPDFPrintHelper->DrawPageToFile(aID+1, temp1.get(), 1, page_width, page_height);
+
+  mPDFPrintHelper->CloseDocument(aID);
+  mPDFPrintHelper->CloseDocument(aID+1);
+
+  Unused << SendNotifyPageCount(aID, mTotal_page_num);
 #endif
   return IPC_OK();
 }
@@ -257,7 +280,7 @@ ipc::IPCResult
 PPAPIJSPluginChild::RecvFinishPrint(const uint16_t& aID)
 {
 #ifdef XP_WIN
-
+  mPDFPrintHelper->CloseDocument(aID);
 #endif
   return IPC_OK();
 }

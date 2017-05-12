@@ -31,24 +31,22 @@ float ComputeScaleFactor(int aDCWidth, int aDCHeight,
 
 PDFViaEMFPrintHelper::PDFViaEMFPrintHelper(PRLibrary* aPDFiumLibrary)
   : mPDFiumLibrary(aPDFiumLibrary)
-  , mPDFDoc(nullptr)
 {
   MOZ_ASSERT(mPDFiumLibrary);
 }
 
 PDFViaEMFPrintHelper::~PDFViaEMFPrintHelper()
 {
-  CloseDocument();
+  while (!mIDHandlerMap.empty()) {
+    auto it = mIDHandlerMap.begin();
+    CloseDocument(it->first);
+  }
 }
 
 nsresult
-PDFViaEMFPrintHelper::OpenDocument(nsIFile *aFile)
+PDFViaEMFPrintHelper::OpenDocument(nsIFile *aFile, uint16_t aID)
 {
   MOZ_ASSERT(aFile);
-  if (mPDFDoc) {
-    MOZ_ASSERT_UNREACHABLE("We can only open one PDF at a time");
-    return NS_ERROR_FAILURE;
-  }
 
   if (!mPDFiumEngine) {
     mPDFiumEngine = MakeUnique<PDFiumEngineShim>(mPDFiumLibrary);
@@ -60,32 +58,56 @@ PDFViaEMFPrintHelper::OpenDocument(nsIFile *aFile)
     return rv;
   }
 
-  mPDFDoc = mPDFiumEngine->LoadDocument(nativePath.get(), nullptr);
-  if (!mPDFDoc) {
+  FPDF_DOCUMENT PDFDoc = mPDFiumEngine->LoadDocument(nativePath.get(), nullptr);
+  if (!PDFDoc) {
     return NS_ERROR_FAILURE;
   }
 
-  if (mPDFiumEngine->GetPageCount(mPDFDoc) < 1) {
-    CloseDocument();
+  if (mPDFiumEngine->GetPageCount(PDFDoc) < 1) {
+    mPDFiumEngine->CloseDocument(PDFDoc);
     return NS_ERROR_FAILURE;
   }
+
+  mIDHandlerMap.insert(std::make_pair(aID, PDFDoc));
 
   return NS_OK;
 }
 
-bool
-PDFViaEMFPrintHelper::RenderPageToDC(HDC aDC, unsigned int aPageIndex,
-                                     int aPageWidth, int aPageHeight)
+int
+PDFViaEMFPrintHelper::GetPageCount(uint16_t aID)
 {
-  MOZ_ASSERT(aDC && mPDFDoc);
-  MOZ_ASSERT(static_cast<int>(aPageIndex) <
-             mPDFiumEngine->GetPageCount(mPDFDoc));
+  auto it = mIDHandlerMap.find(aID);
+  if (it == mIDHandlerMap.end()) {
+    return 0;
+  }
+
+  return  mPDFiumEngine->GetPageCount(it->second);
+}
+
+bool
+PDFViaEMFPrintHelper::RenderPageToDC(uint16_t aID,
+                                     HDC aDC,
+                                     unsigned int aPageIndex,
+                                     int aPageWidth,
+                                     int aPageHeight)
+{
+  MOZ_ASSERT(aDC);
+
+  auto it = mIDHandlerMap.find(aID);
+  if (it == mIDHandlerMap.end()) {
+    return false;
+  }
+
+  if (static_cast<int>(aPageIndex) >=
+      mPDFiumEngine->GetPageCount(it->second)) {
+    return false;
+  }
 
   if (aPageWidth <= 0 || aPageHeight <= 0) {
     return false;
   }
 
-  FPDF_PAGE pdfPage = mPDFiumEngine->LoadPage(mPDFDoc, aPageIndex);
+  FPDF_PAGE pdfPage = mPDFiumEngine->LoadPage(it->second, aPageIndex);
   NS_ENSURE_TRUE(pdfPage, false);
 
   int dcWidth = ::GetDeviceCaps(aDC, HORZRES);
@@ -113,7 +135,8 @@ PDFViaEMFPrintHelper::RenderPageToDC(HDC aDC, unsigned int aPageIndex,
 }
 
 bool
-PDFViaEMFPrintHelper::DrawPage(HDC aPrinterDC, unsigned int aPageIndex,
+PDFViaEMFPrintHelper::DrawPage(uint16_t aID,
+                               HDC aPrinterDC, unsigned int aPageIndex,
                                int aPageWidth, int aPageHeight)
 {
   // There is a comment in Chromium.
@@ -131,7 +154,7 @@ PDFViaEMFPrintHelper::DrawPage(HDC aPrinterDC, unsigned int aPageIndex,
   bool result = emf.InitForDrawing();
   NS_ENSURE_TRUE(result, false);
 
-  result = RenderPageToDC(emf.GetDC(), aPageIndex, aPageWidth, aPageHeight);
+  result = RenderPageToDC(aID, emf.GetDC(), aPageIndex, aPageWidth, aPageHeight);
   NS_ENSURE_TRUE(result, false);
 
   RECT printRect = {0, 0, aPageWidth, aPageHeight};
@@ -140,7 +163,7 @@ PDFViaEMFPrintHelper::DrawPage(HDC aPrinterDC, unsigned int aPageIndex,
 }
 
 bool
-PDFViaEMFPrintHelper::DrawPageToFile(const wchar_t* aFilePath,
+PDFViaEMFPrintHelper::DrawPageToFile(uint16_t aID, const wchar_t* aFilePath,
                                      unsigned int aPageIndex,
                                      int aPageWidth, int aPageHeight)
 {
@@ -148,16 +171,17 @@ PDFViaEMFPrintHelper::DrawPageToFile(const wchar_t* aFilePath,
   bool result = emf.InitForDrawing(aFilePath);
   NS_ENSURE_TRUE(result, false);
 
-  result = RenderPageToDC(emf.GetDC(), aPageIndex, aPageWidth, aPageHeight);
+  result = RenderPageToDC(aID, emf.GetDC(), aPageIndex, aPageWidth, aPageHeight);
   NS_ENSURE_TRUE(result, false);
   return emf.SaveToFile();
 }
 
 void
-PDFViaEMFPrintHelper::CloseDocument()
+PDFViaEMFPrintHelper::CloseDocument(uint16_t aID)
 {
-  if (mPDFDoc) {
-    mPDFiumEngine->CloseDocument(mPDFDoc);
-    mPDFDoc = nullptr;
+  auto it = mIDHandlerMap.find(aID);
+  if (it != mIDHandlerMap.end()) {
+    mPDFiumEngine->CloseDocument(it->second);
+    mIDHandlerMap.erase(aID);
   }
 }

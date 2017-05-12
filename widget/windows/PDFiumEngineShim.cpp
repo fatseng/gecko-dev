@@ -142,8 +142,6 @@ PDFiumEngineShim::CloseDocument(FPDF_DOCUMENT aDocument)
 {
   MOZ_ASSERT(mInitialized);
   mFPDF_CloseDocument(aDocument);
-  DestroyLibrary();
-  mInitialized = false;
 }
 
 int
