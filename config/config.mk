@@ -565,7 +565,7 @@ awk '$$8 ~ /@$(2)_/ { \
 	split($$8,a,"@"); \
 	split(a[2],b,"_"); \
 	split(b[2],v,"."); \
-	if ($(4)) { \
+	if (0) { \
 		if (!found) { \
 			print "TEST-UNEXPECTED-FAIL | check_stdcxx | We do not want these $(3) symbol versions to be used:" \
 		} \
