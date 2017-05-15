@@ -246,6 +246,9 @@ void* MapFont(FPDF_SYSFONTINFO*,
   }
 
   if (i == arraysize(kPdfFontSubstitutions)) {
+#if defined(MORTAR_DISABLE_FONT_FACE_ENCODING_CONVERSION)
+    description.set_face(face);
+#else
     // Convert to UTF-8 before calling set_face().
     std::string face_utf8;
     if (base::IsStringUTF8(face)) {
@@ -262,6 +265,7 @@ void* MapFont(FPDF_SYSFONTINFO*,
       return nullptr;
 
     description.set_face(face_utf8);
+#endif  // defined(MORTAR_DISABLE_FONT_FACE_ENCODING_CONVERSION)
     description.set_weight(WeightToBrowserFontTrustedWeight(weight));
     description.set_italic(italic > 0);
   }
