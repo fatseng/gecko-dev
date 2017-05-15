@@ -265,6 +265,23 @@ set_config('MOZ_PDF_PRINTING', pdf_printing)
 set_config('PDF_SURFACE_FEATURE', pdf_surface_feature)
 
 
+# Mortar
+# ==============================================================
+option('--enable-mortar', help='Enable mortar extension')
+
+@depends('--enable-mortar', target)
+def enable_mortar(value, target):
+    # Mortar could be enabled on desktop Windows, MacOS and Linux,
+    # x86 and x64 builds.
+    if (target.kernel in ('Darwin', 'WINNT', 'Linux') and
+        target.os not in ('Android', 'iOS') and
+        target.cpu in ('x86', 'x86_64')) and value:
+        return True
+
+set_config('MOZ_MORTAR', enable_mortar)
+set_define('MOZ_MORTAR', enable_mortar)
+
+
 # Event loop instrumentation
 # ==============================================================
 option(env='MOZ_INSTRUMENT_EVENT_LOOP',
@@ -329,9 +346,9 @@ add_old_configure_assignment('_HAVE_FREETYPE2',
 
 # Build Freetype in the tree
 # ==============================================================
-@depends(target)
-def tree_freetype(target):
-    if target.os == 'Android':
+@depends(enable_mortar, target)
+def tree_freetype(enable_mortar, target):
+    if enable_mortar or target.os == 'Android':
         return True
 
 set_define('MOZ_TREE_FREETYPE', tree_freetype)
@@ -991,12 +1008,6 @@ def skia_includes(skia, skia_gpu):
     return includes
 
 set_config('SKIA_INCLUDES', skia_includes)
-
-# Mortar
-# ==============================================================
-option('--enable-mortar', help='Enable mortar extension')
-
-set_config('MOZ_MORTAR', True, when='--enable-mortar')
 
 # Marionette is a Web Driver / Selenium comamnd server and client automation
 # driver for Mozilla's Gecko engine.  For more, see

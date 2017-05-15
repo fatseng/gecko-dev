@@ -10,6 +10,9 @@ EXPORTS += [
     'zlib.h',
 ]
 
+if CONFIG['MOZ_DEBUG']:
+    DEFINES['ZLIB_DEBUG'] = True
+
 if CONFIG['ZLIB_IN_MOZGLUE']:
     FINAL_LIBRARY = 'mozglue'
     DEFINES['IMPL_MFBT'] = True
