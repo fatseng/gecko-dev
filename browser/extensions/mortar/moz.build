@@ -20,9 +20,17 @@ FINAL_TARGET_PP_FILES.features['ppapipdf.js@mozilla.org'] += [
 
 JAR_MANIFESTS += ['jar.mn']
 
+EXPORTS += [
+    '!outrpc.cc',
+]
+
 SOURCES += [
     'host/rpc.cc',
 ]
+
+GENERATED_FILES += ['outrpc.cc']
+rpc = GENERATED_FILES['outrpc.cc']
+rpc.script = 'ppapi/generators/idl_gen_rpc.py'
 
 GeckoSharedLibrary('rpc')
 ALLOW_COMPILER_WARNINGS = True
