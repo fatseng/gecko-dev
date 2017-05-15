@@ -58,8 +58,7 @@ const POINT_PER_INCH = 72;
 const POINT_PER_MILLIMETER = POINT_PER_INCH / 25.4;
 
 const PRINT_FILE_NAME = "print.pdf";
-const PRINT_CONTENT_TEMP_KEY =
-  (Services.appinfo.OS == "Linux") ? "TmpD" : "ContentTmpD";
+const PRINT_TEMP_KEY = "TmpD";
 
 const PP_Bool = {
   PP_FALSE: 0,
@@ -5011,7 +5010,7 @@ PPAPIRuntime.prototype = {
       }
       let buffer = PP_Resource.lookup(bufferId);
       // Save PDF to file
-      let file = Services.dirsvc.get(PRINT_CONTENT_TEMP_KEY, Ci.nsIFile);
+      let file = Services.dirsvc.get(PRINT_TEMP_KEY, Ci.nsIFile);
       file.append(PRINT_FILE_NAME);
       file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, PR_IRUSR | PR_IWUSR);
       let stream = Cc["@mozilla.org/network/file-output-stream;1"].
@@ -5033,8 +5032,9 @@ PPAPIRuntime.prototype = {
         "PPP_Printing(Dev);0.6", "End", { instance }), true);
       // We need permission for printing PDF file
 
-      instance.mm.sendAsyncMessage("ppapipdf.js:printPDF", {
-        contentTempKey: PRINT_CONTENT_TEMP_KEY, fileName: PRINT_FILE_NAME });
+dump("file path = " + file.path + "\n");
+       instance.mm.sendAsyncMessage("ppapipdf.js:printPDF", {
+        filePath: file.path });
     },
 
     /**

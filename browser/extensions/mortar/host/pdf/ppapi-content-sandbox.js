@@ -13,6 +13,7 @@ const { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
+Cu.import("resource://gre/modules/FileUtils.jsm");
 
 XPCOMUtils.defineLazyModuleGetter(this, "NetUtil",
                                           "resource://gre/modules/NetUtil.jsm");
@@ -159,15 +160,16 @@ mm.addMessageListener("ppapipdf.js:getPrintSettings", () => {
 
 mm.addMessageListener("ppapipdf.js:printPDF", ({ data }) => {
   dump("\n\n\nFarmer ppapipdf.js:printPDF\n\n\n")
-  let file = Services.dirsvc.get(data.contentTempKey, Ci.nsIFile);
-  file.append(data.fileName);
-dump(file.path);
-/*
+//  let file = Services.dirsvc.get(data.contentTempKey, Ci.nsIFile);
+//  file.append(data.fileName);
+    let file = new FileUtils.File(data.filePath);
+dump("file path = " + file.path + "\n");
+
   if (!file.exists()) {
-    dump("\n\n\nFarmer file.exists\n\n\n")
+    dump("\n\n\nFarmer file.exists\n\n\n");
     return;
   }
-*/
+
   let webBrowserPrint =
     containerWindow.QueryInterface(Ci.nsIInterfaceRequestor).
     getInterface(Ci.nsIWebBrowserPrint);
@@ -177,8 +179,8 @@ dump(file.path);
     return;
   }
 dump("\n\n\nFarmer printPDF\n\n\n");
-  //webBrowserPrint.printPDF(file.path, printSettings
-  webBrowserPrint.printPDF("C:\\Users\\Farmer Tseng\\Documents\\yahoo.pdf")
+  webBrowserPrint.printPDF(file.path)
+  //webBrowserPrint.printPDF("C:\\Users\\Farmer Tseng\\Documents\\yahoo.pdf")
   .then(() => {
     //file.remove(false);
   })
