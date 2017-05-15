@@ -49,6 +49,9 @@ Buffer_Dev::Buffer_Dev(PassRef, PP_Resource resource)
 }
 
 Buffer_Dev::~Buffer_Dev() {
+  if (is_null())
+    return;
+
   get_interface<PPB_Buffer_Dev>()->Unmap(pp_resource());
 }
 
@@ -59,6 +62,9 @@ Buffer_Dev& Buffer_Dev::operator=(const Buffer_Dev& rhs) {
 }
 
 void Buffer_Dev::Init() {
+  if (is_null())
+    return;
+
   if (get_interface<PPB_Buffer_Dev>()->Describe(pp_resource(), &size_)) {
     data_ = get_interface<PPB_Buffer_Dev>()->Map(pp_resource());
     if (data_)

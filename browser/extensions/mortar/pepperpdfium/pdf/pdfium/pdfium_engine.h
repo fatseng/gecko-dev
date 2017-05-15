@@ -65,9 +65,9 @@ class PDFiumEngine : public PDFEngine,
   bool HandleEvent(const pp::InputEvent& event) override;
   uint32_t QuerySupportedPrintOutputFormats() override;
   void PrintBegin() override;
-  pp::Resource PrintPages(const PP_PrintPageNumberRange_Dev* page_ranges,
-                          uint32_t page_range_count,
-                          const PP_PrintSettings_Dev& print_settings) override;
+  pp::Buffer_Dev PrintPages(const PP_PrintPageNumberRange_Dev* page_ranges,
+                            uint32_t page_range_count,
+                            const PP_PrintSettings_Dev& print_settings) override;
   void PrintEnd() override;
   void StartFind(const std::string& text, bool case_sensitive) override;
   bool SelectFindResult(bool forward) override;

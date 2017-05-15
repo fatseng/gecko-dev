@@ -22,6 +22,7 @@
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
@@ -212,7 +213,7 @@ class PDFEngine {
   virtual bool HandleEvent(const pp::InputEvent& event) = 0;
   virtual uint32_t QuerySupportedPrintOutputFormats() = 0;
   virtual void PrintBegin() = 0;
-  virtual pp::Resource PrintPages(
+  virtual pp::Buffer_Dev PrintPages(
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count,
       const PP_PrintSettings_Dev& print_settings) = 0;

@@ -847,11 +847,11 @@ int32_t OutOfProcessInstance::PrintBegin(
   return ret;
 }
 
-pp::Resource OutOfProcessInstance::PrintPages(
+pp::Buffer_Dev OutOfProcessInstance::PrintPages(
     const PP_PrintPageNumberRange_Dev* page_ranges,
     uint32_t page_range_count) {
   if (!print_settings_.is_printing)
-    return pp::Resource();
+    return pp::Buffer_Dev();
 
   print_settings_.print_pages_called_ = true;
   return engine_->PrintPages(page_ranges, page_range_count,

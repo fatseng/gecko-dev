@@ -1377,7 +1377,7 @@ void PDFiumEngine::PrintBegin() {
   FORM_DoDocumentAAction(form_, FPDFDOC_AACTION_WP);
 }
 
-pp::Resource PDFiumEngine::PrintPages(
+pp::Buffer_Dev PDFiumEngine::PrintPages(
     const PP_PrintPageNumberRange_Dev* page_ranges, uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings) {
   ScopedSubstFont scoped_subst_font(this);
@@ -1388,7 +1388,7 @@ pp::Resource PDFiumEngine::PrintPages(
     return PrintPagesAsRasterPDF(page_ranges, page_range_count, print_settings);
   }
 
-  return pp::Resource();
+  return pp::Buffer_Dev();
 }
 
 FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(

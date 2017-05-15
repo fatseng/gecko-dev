@@ -9,6 +9,7 @@
 
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/resource.h"
 
@@ -28,8 +29,8 @@ class Printing_Dev : public Resource {
   // override.
   virtual uint32_t QuerySupportedPrintOutputFormats() = 0;
   virtual int32_t PrintBegin(const PP_PrintSettings_Dev& print_settings) = 0;
-  virtual Resource PrintPages(const PP_PrintPageNumberRange_Dev* page_ranges,
-                              uint32_t page_range_count) = 0;
+  virtual Buffer_Dev PrintPages(const PP_PrintPageNumberRange_Dev* page_ranges,
+                                uint32_t page_range_count) = 0;
   virtual void PrintEnd() = 0;
   virtual bool IsPrintScalingDisabled() = 0;
 

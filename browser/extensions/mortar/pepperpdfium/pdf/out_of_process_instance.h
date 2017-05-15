@@ -68,7 +68,7 @@ class OutOfProcessInstance : public pp::Instance,
   // pp::Printing_Dev implementation.
   uint32_t QuerySupportedPrintOutputFormats() override;
   int32_t PrintBegin(const PP_PrintSettings_Dev& print_settings) override;
-  pp::Resource PrintPages(
+  pp::Buffer_Dev PrintPages(
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count) override;
   void PrintEnd() override;
