@@ -622,18 +622,14 @@ def GenerateDep(outfile, emitted, f, releases):
     outfile.Write('/* ' + include.GetName() + ' */')
     GenerateHeader(outfile, include, releases)
 
-def main(args):
-  filenames = ParseOptions(args)
-  ast = ParseFiles(filenames)
+def main(outfile):
+  outfile.Write = outfile.write
+  ast = ParseFiles([])
   rpcgen = RPCGen()
   files = ast.GetListOf('File')
-  outname = GetOption('out')
-  if outname == '':
-    outname = 'out.cc'
-  outfile = IDLOutFile(outname)
   emitted = set()
   for f in files:
-    if f.GetName() == 'pp_macros.idl':
+    if os.path.basename(f.GetName()) == 'pp_macros.idl':
       GenerateDep(outfile, emitted, f, ast.releases)
   for f in files:
     GenerateDep(outfile, emitted, f, ast.releases)
@@ -668,7 +664,3 @@ def main(args):
   out += '};\n'
   out += '\n'
   outfile.Write(out);
-  outfile.Close()
-
-if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))

@@ -43,7 +43,8 @@ Option('build_debug', 'Debug tree building.')
 Option('parse_debug', 'Debug parse reduction steps.')
 Option('token_debug', 'Debug token generation.')
 Option('dump_tree', 'Dump the tree.')
-Option('srcroot', 'Working directory.', default=os.path.join('..', 'api'))
+Option('srcroot', 'Working directory.', default=os.path.join(
+  os.path.dirname(os.path.realpath(__file__)), '..', 'api'))
 Option('include_private', 'Include private IDL directory in default API paths.')
 
 #
