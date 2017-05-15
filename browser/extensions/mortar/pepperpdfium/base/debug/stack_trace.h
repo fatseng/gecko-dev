@@ -31,6 +31,11 @@ struct _CONTEXT;
 #define HAVE_TRACE_STACK_FRAME_POINTERS 0
 #endif
 
+#if defined(MORTAR_NO_LIBC_STACK_END) // avoiding linker failures caused by using __libc_stack_end
+#undef HAVE_TRACE_STACK_FRAME_POINTERS
+#define HAVE_TRACE_STACK_FRAME_POINTERS 0
+#endif  // defined(MORTAR_NO_LIBC_STACK_END)
+
 namespace base {
 namespace debug {
 
