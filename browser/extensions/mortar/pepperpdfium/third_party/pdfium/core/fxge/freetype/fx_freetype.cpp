@@ -6,7 +6,11 @@
 
 #include "core/fxge/fx_freetype.h"
 
+#if defined(MORTAR) // using integrated freetype2 within Gecko
+#include "psnames/pstables.h"
+#else
 #include "third_party/freetype/src/psnames/pstables.h"
+#endif  // defined(MORTAR)
 
 static int xyq_search_node(char* glyph_name,
                            int name_offset,

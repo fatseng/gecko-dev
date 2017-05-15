@@ -19,6 +19,8 @@ extern "C" {
 #undef FAR
 #if defined(USE_SYSTEM_LIBJPEG)
 #include <jpeglib.h>
+#elif defined(MORTAR) // using integrated jpeglib within Gecko
+#include "jpeglib.h"
 #elif defined(USE_LIBJPEG_TURBO)
 #include "third_party/libjpeg_turbo/jpeglib.h"
 #else
