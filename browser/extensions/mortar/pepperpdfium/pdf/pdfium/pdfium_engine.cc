@@ -602,8 +602,11 @@ std::string GetDocumentMetadata(FPDF_DOCUMENT doc, const std::string& key) {
   return base::UTF16ToUTF8(value);
 }
 
+#if !defined(MORTAR_DISABLE_SCRIPT)
 gin::IsolateHolder* g_isolate_holder = nullptr;
+#endif  // !defined(MORTAR_DISABLE_SCRIPT)
 
+#if !defined(MORTAR_DISABLE_SCRIPT)
 void SetUpV8() {
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
                                  gin::IsolateHolder::kStableV8Extras,
@@ -612,12 +615,15 @@ void SetUpV8() {
                                             gin::IsolateHolder::kSingleThread);
   g_isolate_holder->isolate()->Enter();
 }
+#endif  // !defined(MORTAR_DISABLE_SCRIPT)
 
+#if !defined(MORTAR_DISABLE_SCRIPT)
 void TearDownV8() {
   g_isolate_holder->isolate()->Exit();
   delete g_isolate_holder;
   g_isolate_holder = nullptr;
 }
+#endif  // !defined(MORTAR_DISABLE_SCRIPT)
 
 int GetBlockForJpeg(void* param,
                     unsigned long pos,
@@ -633,12 +639,18 @@ int GetBlockForJpeg(void* param,
 }  // namespace
 
 bool InitializeSDK() {
+#if !defined(MORTAR_DISABLE_SCRIPT)
   SetUpV8();
+#endif  // !defined(MORTAR_DISABLE_SCRIPT)
 
   FPDF_LIBRARY_CONFIG config;
   config.version = 2;
   config.m_pUserFontPaths = nullptr;
+#if !defined(MORTAR_DISABLE_SCRIPT)
   config.m_pIsolate = v8::Isolate::GetCurrent();
+#else
+  config.m_pIsolate = nullptr;
+#endif  // !defined(MORTAR_DISABLE_SCRIPT)
   config.m_v8EmbedderSlot = gin::kEmbedderPDFium;
   FPDF_InitLibraryWithConfig(&config);
 
@@ -670,7 +682,9 @@ void ShutdownSDK() {
 #if !defined(OS_LINUX)
   delete g_font_info;
 #endif
+#if !defined(MORTAR_DISABLE_SCRIPT)
   TearDownV8();
+#endif  // !defined(MORTAR_DISABLE_SCRIPT)
 }
 
 PDFEngine* PDFEngine::Create(PDFEngine::Client* client) {

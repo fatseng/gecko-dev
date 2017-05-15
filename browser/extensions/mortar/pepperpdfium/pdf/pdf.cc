@@ -42,6 +42,7 @@ bool PDFModule::Init() {
 
 pp::Instance* PDFModule::CreateInstance(PP_Instance instance) {
   if (!g_sdk_initialized_via_pepper) {
+#if !defined(MORTAR_DISABLE_SCRIPT)
     v8::StartupData natives;
     v8::StartupData snapshot;
     pp::PDF::GetV8ExternalSnapshotData(pp::InstanceHandle(instance),
@@ -51,6 +52,7 @@ pp::Instance* PDFModule::CreateInstance(PP_Instance instance) {
       v8::V8::SetNativesDataBlob(&natives);
       v8::V8::SetSnapshotDataBlob(&snapshot);
     }
+#endif  // !defined(MORTAR_DISABLE_SCRIPT)
     if (!InitializeSDK())
       return nullptr;
     g_sdk_initialized_via_pepper = true;
