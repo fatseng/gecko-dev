@@ -16,6 +16,7 @@
 #include "nsPrintfCString.h"
 #include "nsIFile.h"
 #include "nsLocalFile.h"
+#include "nsPrintfCString.h"
 
 using namespace mozilla::widget;
 #endif
@@ -189,7 +190,7 @@ public:
 protected:
 #ifdef XP_WIN
   UniquePtr<PDFViaEMFPrintHelper> mPDFPrintHelper;
-  nsString mFilePath;
+  nsString mEMFPath;
 #endif
 };
 
@@ -213,53 +214,19 @@ PPAPIJSPluginChild::RecvStartPrint(const uint16_t& aID, const nsString& aFilePat
   localFile->InitWithPath(aFilePath);
 
   nsresult rv = mPDFPrintHelper->OpenDocument(localFile, aID);
-  printf_stderr("\n\n\nFarmer RecvNotifyPrint =============== 3\n\n\n");
-   if (NS_FAILED(rv)) {
-     return IPC_OK();
-   }
-
-  int mTotal_page_num = mPDFPrintHelper->GetPageCount(aID);
-  printf_stderr("\n\n\nFarmer RecvNotifyPrint =============== 4\n\n\n");
-  if (mTotal_page_num <= 0) {
-    mPDFPrintHelper = nullptr;
+  if (NS_FAILED(rv)) {
     return IPC_OK();
   }
 
-  nsAutoString FilePath1(NS_LITERAL_STRING("C:\\Users\\Farmer Tseng\\Documents\\yahoo1.pdf"));
-  RefPtr<nsLocalFile> localFile1 = new nsLocalFile;
-  localFile1->InitWithPath(FilePath1);
-  
-  rv = mPDFPrintHelper->OpenDocument(localFile1, aID+1);
-   if (NS_FAILED(rv)) {
-     return IPC_OK();
-   }
-
-  mTotal_page_num = mPDFPrintHelper->GetPageCount(aID+1);
-  if (mTotal_page_num <= 0) {
-    mPDFPrintHelper = nullptr;
+  int pageCount = mPDFPrintHelper->GetPageCount(aID);
+  if (pageCount <= 0) {
     return IPC_OK();
   }
 
   int32_t end = aFilePath.RFind("\\");
-  nsString temp;
-  aFilePath.Left(temp, end);
-  temp.Append(NS_ConvertUTF8toUTF16("\\test.emf").get());
+  aFilePath.Left(mEMFPath, end);
 
-  int page_width = 4961, page_height = 7016;
-  mPDFPrintHelper->DrawPageToFile(aID, temp.get(), 2, page_width, page_height);
-  //mPDFPrintHelper->DrawPageToFile(L"C:\\Users\\user\\AppData\\LocalLow\\Mozilla\\ChromiumPrinting2.emf", 2, page_width, page_height);
-
-  end = FilePath1.RFind("\\");
-  nsString temp1;
-  FilePath1.Left(temp1, end);
-  temp1.Append(NS_ConvertUTF8toUTF16("\\test1.emf").get());
-
-  mPDFPrintHelper->DrawPageToFile(aID+1, temp1.get(), 1, page_width, page_height);
-
-  mPDFPrintHelper->CloseDocument(aID);
-  mPDFPrintHelper->CloseDocument(aID+1);
-
-  Unused << SendNotifyPageCount(aID, mTotal_page_num);
+  Unused << SendNotifyPageCount(aID, pageCount);
 #endif
   return IPC_OK();
 }
@@ -271,6 +238,12 @@ PPAPIJSPluginChild::RecvConvertPDFToEMF(const uint16_t& aID,
                                         const int& aPageHeight)
 {
 #ifdef XP_WIN
+  nsString EMFFilePath = mEMFPath;
+  EMFFilePath.Append(NS_ConvertUTF8toUTF16(nsPrintfCString("\\%d.emf", aID)).get());
+  mPDFPrintHelper->DrawPageToFile(aID, EMFFilePath.get(), aPageNum,
+                                  aPageWidth, aPageHeight);
+
+  Unused << SendPrintEMF(aID, EMFFilePath, aPageNum);
 
 #endif
   return IPC_OK();

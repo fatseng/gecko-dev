@@ -38,6 +38,7 @@
 #include "mozilla/gfx/Logging.h"
 
 #include "mozilla/plugins/PPAPIJSProcessParent.h"
+#include "WindowsEMF.h"
 
 static mozilla::LazyLogModule kWidgetPrintingLogMod("printing-widget");
 #define PR_PL(_p1)  MOZ_LOG(kWidgetPrintingLogMod, mozilla::LogLevel::Debug, _p1)
@@ -97,6 +98,7 @@ nsDeviceContextSpecWin::nsDeviceContextSpecWin()
   mDC            = nullptr;
   mRemotePrintJobParent = nullptr;
   mJSParent      = nullptr;
+  mPDFPageCount  = 0;
 }
 
 
@@ -282,13 +284,38 @@ already_AddRefed<PrintTarget> nsDeviceContextSpecWin::MakePrintTarget()
 void
 nsDeviceContextSpecWin::PDFPrintjob()
 {
+  int pageWidth = ::GetDeviceCaps(mDC, HORZRES);
+  int pageHeight = ::GetDeviceCaps(mDC, VERTRES);
   int result = ::StartPage(mDC);
   if (result > 0) {
     // XXX: print EMF here, will fix in Bug 1345786
+    WindowsEMF emf;
+    bool bresult = emf.InitFromFileContents(mEMFFilePath.get());
+    if (!bresult) {
+      ::EndPage(mDC);
+      return;
+    }
+    RECT printRect = {0, 0, pageWidth, pageHeight};
+    bresult = emf.Playback(mDC, &printRect);
     ::EndPage(mDC);
   }
 
+  if (mPageNum < mPDFPageCount) {
+    if (mJSParent) {
+      mJSParent->SendConvertPDFToEMF(mPDFJobID, mPageNum,
+                                     pageWidth, pageHeight);
+      mPageNum++;
+    }
+    return;
+  }
+
   ::EndDoc(mDC);
+
+  if (mJSParent) {
+    printf("-----SendFinishPrint-----\n");
+    mJSParent->SendFinishPrint(mPDFJobID);
+  }
+
   if (mRemotePrintJobParent) {
     mRemotePrintJobParent->SendDonePrintingPDF();
     mRemotePrintJobParent = nullptr;
@@ -311,8 +338,15 @@ nsDeviceContextSpecWin::PrintPDF(const nsAString& aPDFFilePath,
 }
 
 bool
-nsDeviceContextSpecWin::SetPDFPageCount(int aPageCount)
+nsDeviceContextSpecWin::SetPDFPageCount(const uint16_t aID, int aPageCount)
 {
+  if (mPDFJobID != aID) {
+    return false;
+  }
+
+  mPDFPageCount = aPageCount;
+  mPageNum = 0;
+
   if (mDevMode) {
     NS_WARNING_ASSERTION(mDriverName, "No driver!");
     mDC = ::CreateDCW(mDriverName, mDeviceName, nullptr, mDevMode);
@@ -340,14 +374,23 @@ nsDeviceContextSpecWin::SetPDFPageCount(int aPageCount)
     }
     return false;
   }
-
-  nsresult rv = NS_DispatchToCurrentThread(
-    NewRunnableMethod(this, &nsDeviceContextSpecWin::PDFPrintjob));
-  if (NS_FAILED(rv)) {
-    return false;
+  if (mJSParent) {
+    int pageWidth = ::GetDeviceCaps(mDC, HORZRES);
+    int pageHeight = ::GetDeviceCaps(mDC, VERTRES);
+    mJSParent->SendConvertPDFToEMF(mPDFJobID, mPageNum, pageWidth, pageHeight);
+    mPageNum++;
   }
 
   return true;
+}
+
+void
+nsDeviceContextSpecWin::PrintEMF(const uint16_t aID,
+                                 const nsString& aEMFFilePath)
+{
+  mEMFFilePath.Assign(aEMFFilePath);
+  NS_DispatchToCurrentThread(
+    NewRunnableMethod(this, &nsDeviceContextSpecWin::PDFPrintjob));
 }
 
 float

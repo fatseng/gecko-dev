@@ -154,18 +154,27 @@ PPAPIJSPluginParent::ActorDestroy(ActorDestroyReason aWhy)
   sPPAPIPlugins[mJSPluginID] = nullptr;
 }
 
+#ifdef XP_WIN
+static std::vector<nsDeviceContextSpecWin*> sDeviceContextSpec;
+#endif
+
 ipc::IPCResult
 PPAPIJSPluginParent::RecvNotifyPageCount(const uint16_t& aID, const int& aPageCount)
 {
+#ifdef XP_WIN
   printf("---RecvNotifyPageCount---\n");
-
+  sDeviceContextSpec[aID]->SetPDFPageCount(aID, aPageCount);
+#endif
   return IPC_OK();
 }
 
 ipc::IPCResult
 PPAPIJSPluginParent::RecvPrintEMF(const uint16_t& aID, const nsString& aFilePath, const int& aPageNum)
 {
-  printf("---RecvPrintEMF---\n");
+#ifdef XP_WIN
+  printf("---RecvPrintEMF:  %d---\n", aPageNum);
+  sDeviceContextSpec[aID]->PrintEMF(aID, aFilePath);
+#endif
   return IPC_OK();
 }
 
@@ -176,10 +185,9 @@ PPAPIJSPluginParent::DeallocPPPAPIJSPluginParent()
 }
 
 #ifdef XP_WIN
-static std::vector<nsDeviceContextSpecWin*> sDeviceContextSpec;
-
 int16_t
-PPAPIJSPluginParent::SetDeviceContextSpecWin(nsDeviceContextSpecWin* aDeviceContextSpec)
+PPAPIJSPluginParent::SetDeviceContextSpecWin(
+  nsDeviceContextSpecWin* aDeviceContextSpec)
 {
   uint16_t i = 0;
   for (; i < sDeviceContextSpec.size(); ++i) {

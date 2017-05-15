@@ -57,7 +57,8 @@ public:
   // helper functions
   nsresult GetDataFromPrinter(char16ptr_t aName, nsIPrintSettings* aPS = nullptr);
 
-  bool SetPDFPageCount(int aPageCount);
+  bool SetPDFPageCount(const uint16_t aID, int aPageCount);
+  void PrintEMF(const uint16_t aID, const nsString& aEMFFilePath);
 
 protected:
 
@@ -83,6 +84,7 @@ protected:
   int mPDFPageCount;
   int mPageNum;
   int16_t mPDFJobID;
+  nsString mEMFFilePath;
 };
 
 
