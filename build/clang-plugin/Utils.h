@@ -193,7 +193,8 @@ inline bool isIgnoredPathForImplicitCtor(const Decl *Declaration) {
         Begin->compare_lower(StringRef("icu")) == 0 ||
         Begin->compare_lower(StringRef("libcubeb")) == 0 ||
         Begin->compare_lower(StringRef("libstagefright")) == 0 ||
-        Begin->compare_lower(StringRef("cairo")) == 0) {
+        Begin->compare_lower(StringRef("cairo")) == 0 ||
+        Begin->compare_lower(StringRef("pepperpdfium")) == 0) {
       return true;
     }
     if (Begin->compare_lower(StringRef("chromium")) == 0) {
@@ -214,7 +215,8 @@ inline bool isIgnoredPathForImplicitConversion(const Decl *Declaration) {
   llvm::sys::path::reverse_iterator Begin = llvm::sys::path::rbegin(FileName),
                                     End = llvm::sys::path::rend(FileName);
   for (; Begin != End; ++Begin) {
-    if (Begin->compare_lower(StringRef("graphite2")) == 0) {
+    if (Begin->compare_lower(StringRef("graphite2")) == 0 ||
+        Begin->compare_lower(StringRef("pepperpdfium")) == 0) {
       return true;
     }
     if (Begin->compare_lower(StringRef("chromium")) == 0) {
@@ -245,7 +247,8 @@ inline bool isIgnoredPathForSprintfLiteral(const CallExpr *Call, const SourceMan
         Begin->compare_lower(StringRef("skia")) == 0 ||
         Begin->compare_lower(StringRef("sfntly")) == 0 ||
         // Gtest uses snprintf as GTEST_SNPRINTF_ with sizeof
-        Begin->compare_lower(StringRef("testing")) == 0) {
+        Begin->compare_lower(StringRef("testing")) == 0 ||
+        Begin->compare_lower(StringRef("pepperpdfium")) == 0) {
       return true;
     }
     if (Begin->compare_lower(StringRef("webrtc")) == 0) {

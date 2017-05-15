@@ -85,7 +85,8 @@ AST_MATCHER(BinaryOperator, isInWhitelistForNaNExpr) {
   const char* whitelist[] = {
     "SkScalar.h",
     "json_writer.cpp",
-    "State.cpp"
+    "State.cpp",
+    "safe_integer_conversions.h"
   };
 
   SourceLocation Loc = Node.getOperatorLoc();
