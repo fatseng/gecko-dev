@@ -1444,8 +1444,10 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
                         print_settings.orientation,
                         FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH);
 
+#if !defined(MORTAR_DISABLE_PRINT_PDF_AS_IMAGE)
   unsigned char* bitmap_data =
       static_cast<unsigned char*>(FPDFBitmap_GetBuffer(bitmap));
+#endif  // !defined(MORTAR_DISABLE_PRINT_PDF_AS_IMAGE)
   double ratio_x = ConvertUnitDouble(bitmap_size.width(),
                                      print_settings.dpi,
                                      kPointsPerInch);
@@ -1457,6 +1459,7 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
   // page.
   FPDF_PAGEOBJECT temp_img = FPDFPageObj_NewImgeObj(temp_doc);
 
+#if !defined(MORTAR_DISABLE_PRINT_PDF_AS_IMAGE)
   std::vector<uint8_t> compressed_bitmap_data;
   int quality = 40;
   if (!(print_settings.format & PP_PRINTOUTPUTFORMAT_PDF) &&
@@ -1472,8 +1475,11 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
 
     FPDFImageObj_LoadJpegFileInline(&temp_page, 1, temp_img, &file_access);
   } else {
+#endif  // !defined(MORTAR_DISABLE_PRINT_PDF_AS_IMAGE)
     FPDFImageObj_SetBitmap(&temp_page, 1, temp_img, bitmap);
+#if !defined(MORTAR_DISABLE_PRINT_PDF_AS_IMAGE)
   }
+#endif  // !defined(MORTAR_DISABLE_PRINT_PDF_AS_IMAGE)
 
   FPDFImageObj_SetMatrix(temp_img, ratio_x, 0, 0, ratio_y, 0, 0);
   FPDFPage_InsertObject(temp_page, temp_img);
