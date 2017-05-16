@@ -238,10 +238,11 @@ PPAPIJSPluginChild::RecvConvertPDFToEMF(const uint16_t& aID,
                                         const int& aPageHeight)
 {
 #ifdef XP_WIN
+  float scaleFactor = 1.0;
   nsString EMFFilePath = mEMFPath;
   EMFFilePath.Append(NS_ConvertUTF8toUTF16(nsPrintfCString("\\%d.emf", aID)).get());
   mPDFPrintHelper->DrawPageToFile(aID, EMFFilePath.get(), aPageNum,
-                                  aPageWidth, aPageHeight);
+                                  aPageWidth, aPageHeight, scaleFactor);
 
   Unused << SendPrintEMF(aID, EMFFilePath, aPageNum);
 

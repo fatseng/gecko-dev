@@ -41,16 +41,17 @@ public:
 
   /** Convert specified PDF page to EMF and draw the EMF onto the given DC. */
   bool DrawPage(uint16_t aID, HDC aPrinterDC, unsigned int aPageIndex,
-                int aPageWidth, int aPageHeight);
+                int aPageWidth, int aPageHeight, float& aScaleFactor);
 
   /** Convert specified PDF page to EMF and save it to file. */
   bool DrawPageToFile(uint16_t aID, const wchar_t* aFilePath,
-                      unsigned int aPageIndex, int aPageWidth, int aPageHeight);
+                      unsigned int aPageIndex, int aPageWidth, int aPageHeight,
+                      float& aScaleFactor);
 
 private:
 
   bool RenderPageToDC(uint16_t aID, HDC aDC, unsigned int aPageIndex,
-                      int aPageWidth, int aPageHeight);
+                      int aPageWidth, int aPageHeight, float& aScaleFactor);
 
   UniquePtr<PDFiumEngineShim> mPDFiumEngine;
   PRLibrary*                  mPDFiumLibrary;

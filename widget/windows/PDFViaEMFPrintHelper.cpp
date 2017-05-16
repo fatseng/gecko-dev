@@ -89,7 +89,8 @@ PDFViaEMFPrintHelper::RenderPageToDC(uint16_t aID,
                                      HDC aDC,
                                      unsigned int aPageIndex,
                                      int aPageWidth,
-                                     int aPageHeight)
+                                     int aPageHeight,
+                                     float& aScaleFactor)
 {
   MOZ_ASSERT(aDC);
 
@@ -112,12 +113,12 @@ PDFViaEMFPrintHelper::RenderPageToDC(uint16_t aID,
 
   int dcWidth = ::GetDeviceCaps(aDC, HORZRES);
   int dcHeight = ::GetDeviceCaps(aDC, VERTRES);
-  float scaleFactor = ComputeScaleFactor(dcWidth,dcHeight,
-                                         aPageWidth, aPageHeight);
+  aScaleFactor = ComputeScaleFactor(dcWidth,dcHeight,
+                                    aPageWidth, aPageHeight);
   int savedState = ::SaveDC(aDC);
   ::SetGraphicsMode(aDC, GM_ADVANCED);
   XFORM xform = { 0 };
-  xform.eM11 = xform.eM22 = scaleFactor;
+  xform.eM11 = xform.eM22 = aScaleFactor;
   ::ModifyWorldTransform(aDC, &xform, MWT_LEFTMULTIPLY);
 
   // The caller wanted all drawing to happen within the bounds specified.
@@ -137,7 +138,8 @@ PDFViaEMFPrintHelper::RenderPageToDC(uint16_t aID,
 bool
 PDFViaEMFPrintHelper::DrawPage(uint16_t aID,
                                HDC aPrinterDC, unsigned int aPageIndex,
-                               int aPageWidth, int aPageHeight)
+                               int aPageWidth, int aPageHeight,
+                               float& aScaleFactor)
 {
   // There is a comment in Chromium.
   // https://cs.chromium.org/chromium/src/pdf/pdfium/pdfium_engine.cc?rcl=9ad9f6860b4d6a4ec7f7f975b2c99672e02d5d49&l=4008
@@ -154,7 +156,8 @@ PDFViaEMFPrintHelper::DrawPage(uint16_t aID,
   bool result = emf.InitForDrawing();
   NS_ENSURE_TRUE(result, false);
 
-  result = RenderPageToDC(aID, emf.GetDC(), aPageIndex, aPageWidth, aPageHeight);
+  result = RenderPageToDC(aID, emf.GetDC(), aPageIndex,
+                          aPageWidth, aPageHeight, aScaleFactor);
   NS_ENSURE_TRUE(result, false);
 
   RECT printRect = {0, 0, aPageWidth, aPageHeight};
@@ -165,13 +168,15 @@ PDFViaEMFPrintHelper::DrawPage(uint16_t aID,
 bool
 PDFViaEMFPrintHelper::DrawPageToFile(uint16_t aID, const wchar_t* aFilePath,
                                      unsigned int aPageIndex,
-                                     int aPageWidth, int aPageHeight)
+                                     int aPageWidth, int aPageHeight,
+                                     float& aScaleFactor)
 {
   WindowsEMF emf;
   bool result = emf.InitForDrawing(aFilePath);
   NS_ENSURE_TRUE(result, false);
 
-  result = RenderPageToDC(aID, emf.GetDC(), aPageIndex, aPageWidth, aPageHeight);
+  result = RenderPageToDC(aID, emf.GetDC(), aPageIndex,
+                          aPageWidth, aPageHeight, aScaleFactor);
   NS_ENSURE_TRUE(result, false);
   return emf.SaveToFile();
 }
