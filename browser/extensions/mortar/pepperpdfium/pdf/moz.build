@@ -1,0 +1,34 @@
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+# vim: set filetype=python:
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+LOCAL_INCLUDES += [
+    '..',
+]
+
+include('../mortar.mozbuild')
+
+# pdf
+DEFINES['PDFIUM_PRINT_TEXT_WITH_GDI'] = True
+
+SOURCES += [
+    'chunk_stream.cc',
+    'document_loader.cc',
+    'draw_utils.cc',
+    'out_of_process_instance.cc',
+    'paint_aggregator.cc',
+    'paint_manager.cc',
+    'pdf.cc',
+    'pdfium/pdfium_api_string_buffer_adapter.cc',
+    'pdfium/pdfium_assert_matching_enums.cc',
+    'pdfium/pdfium_engine.cc',
+    'pdfium/pdfium_mem_buffer_file_read.cc',
+    'pdfium/pdfium_mem_buffer_file_write.cc',
+    'pdfium/pdfium_page.cc',
+    'pdfium/pdfium_range.cc',
+    'preview_mode_client.cc',
+]
+
+Library('mortar_pdf')

@@ -1,0 +1,99 @@
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+# vim: set filetype=python:
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+LOCAL_INCLUDES += [
+    '/media/libjpeg',
+    '/modules/zlib/src',
+]
+
+if CONFIG['MOZ_TREE_FREETYPE']:
+    LOCAL_INCLUDES += [
+        '/modules/freetype2/include',
+    ]
+
+LOCAL_INCLUDES += [
+    '..',
+]
+
+include('../pdfium_common_config.mozbuild')
+include('../../../mortar.mozbuild')
+
+SOURCES += [
+    # fx_agg
+    'agg23/agg_curves.cpp',
+    'agg23/agg_path_storage.cpp',
+    'agg23/agg_rasterizer_scanline_aa.cpp',
+    'agg23/agg_vcgen_dash.cpp',
+    'agg23/agg_vcgen_stroke.cpp',
+
+    # bigint
+    'bigint/BigInteger.cc',
+    'bigint/BigIntegerUtils.cc',
+    'bigint/BigUnsigned.cc',
+    'bigint/BigUnsignedInABase.cc',
+
+    # fx_lcms2
+    'lcms2-2.6/src/cmscam02.c',
+    'lcms2-2.6/src/cmscgats.c',
+    'lcms2-2.6/src/cmscnvrt.c',
+    'lcms2-2.6/src/cmserr.c',
+    'lcms2-2.6/src/cmsgamma.c',
+    'lcms2-2.6/src/cmsgmt.c',
+    'lcms2-2.6/src/cmshalf.c',
+    'lcms2-2.6/src/cmsintrp.c',
+    'lcms2-2.6/src/cmsio0.c',
+    'lcms2-2.6/src/cmsio1.c',
+    'lcms2-2.6/src/cmslut.c',
+    'lcms2-2.6/src/cmsmd5.c',
+    'lcms2-2.6/src/cmsmtrx.c',
+    'lcms2-2.6/src/cmsnamed.c',
+    'lcms2-2.6/src/cmsopt.c',
+    'lcms2-2.6/src/cmspack.c',
+    'lcms2-2.6/src/cmspcs.c',
+    'lcms2-2.6/src/cmsplugin.c',
+    'lcms2-2.6/src/cmsps2.c',
+    'lcms2-2.6/src/cmssamp.c',
+    'lcms2-2.6/src/cmssm.c',
+    'lcms2-2.6/src/cmstypes.c',
+    'lcms2-2.6/src/cmsvirt.c',
+    'lcms2-2.6/src/cmswtpnt.c',
+    'lcms2-2.6/src/cmsxform.c',
+
+    # fx_libopenjpeg
+    'libopenjpeg20/bio.c',
+    'libopenjpeg20/cio.c',
+    'libopenjpeg20/dwt.c',
+    'libopenjpeg20/event.c',
+    'libopenjpeg20/function_list.c',
+    'libopenjpeg20/image.c',
+    'libopenjpeg20/invert.c',
+    'libopenjpeg20/j2k.c',
+    'libopenjpeg20/jp2.c',
+    'libopenjpeg20/mct.c',
+    'libopenjpeg20/mqc.c',
+    'libopenjpeg20/openjpeg.c',
+    'libopenjpeg20/opj_clock.c',
+    'libopenjpeg20/pi.c',
+    'libopenjpeg20/raw.c',
+    'libopenjpeg20/t1.c',
+    'libopenjpeg20/t2.c',
+    'libopenjpeg20/tcd.c',
+    'libopenjpeg20/tgt.c',
+
+]
+
+USE_LIBS += [
+    # replacement for fx_freetype
+    'freetype',
+    # replacement for jpeg
+    'media_libjpeg',
+    # replacement for fx_lpng
+    'mozpng',
+    # replacement for fx_zlib
+    'zlib',
+]
+
+Library('mortar_pdfium_third_party')
