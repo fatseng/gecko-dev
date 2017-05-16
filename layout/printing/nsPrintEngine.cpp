@@ -858,9 +858,13 @@ nsPrintEngine::PrintPDF(const nsAString&  aPDFFilePath)
 
   SetIsPrinting(true);
 
-  uint32_t pluginID = ContentParent::GetJSPluginID();
-  PPAPIJSPluginParent* jsParent = PPAPIJSProcess::GetPPAPIJSPluginParent(pluginID);
-  return mDevspec->PrintPDF(aPDFFilePath, nullptr, jsParent);
+  if (!XRE_IsContentProcess()) {
+    uint32_t pluginID = ContentParent::GetJSPluginID();
+    PPAPIJSPluginParent* jsParent = PPAPIJSProcess::GetPPAPIJSPluginParent(pluginID);
+    return mDevspec->PrintPDF(aPDFFilePath, nullptr, jsParent);
+  }
+
+  return mDevspec->PrintPDF(aPDFFilePath);
 }
 
 //----------------------------------------------------------------------------------
