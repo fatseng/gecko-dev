@@ -62,14 +62,36 @@ WindowsEMF::ReleaseEMFHandle()
 }
 
 bool
-WindowsEMF::Playback(HDC aDeviceContext, const RECT* aRect)
+WindowsEMF::GetPageBounds(RECT* rect) {
+  if (!mEmf) {
+    return false;
+  }
+
+  ENHMETAHEADER header;
+  if (::GetEnhMetaFileHeader(mEmf, sizeof(header), &header) != sizeof(header)) {
+    return false;
+  }
+  // Add 1 to right and bottom because it's inclusive rectangle.
+  // See ENHMETAHEADER.
+  rect->left = header.rclBounds.left;
+  rect->right = header.rclBounds.right + 1;
+  rect->top = header.rclBounds.top;
+  rect->bottom = header.rclBounds.bottom + 1;
+  return true;
+}
+
+bool
+WindowsEMF::Playback(HDC aDeviceContext)
 {
-  MOZ_ASSERT(aRect);
   if (!FinishDocument()) {
     return false;
   }
 
-  return ::PlayEnhMetaFile(aDeviceContext, mEmf, aRect) != 0;
+  RECT rect;
+  if (!GetPageBounds(&rect)) {
+    return false;
+  }
+  return ::PlayEnhMetaFile(aDeviceContext, mEmf, &rect) != 0;
 }
 
 bool

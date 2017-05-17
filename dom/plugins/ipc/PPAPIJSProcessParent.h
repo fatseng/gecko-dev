@@ -37,7 +37,8 @@ public:
                                              const int& aPageCount) override;
   virtual ipc::IPCResult RecvPrintEMF(const uint16_t& aID,
                                       const nsString& aFilePath,
-                                      const int& aPageNum) override;
+                                      const int& aPageNum,
+                                      const float& aScaleFactor) override;
 #ifdef XP_WIN
   int16_t SetDeviceContextSpecWin(nsDeviceContextSpecWin* aDeviceContextSpec);
 #endif

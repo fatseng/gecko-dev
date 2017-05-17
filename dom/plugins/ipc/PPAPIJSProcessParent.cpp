@@ -169,11 +169,12 @@ PPAPIJSPluginParent::RecvNotifyPageCount(const uint16_t& aID, const int& aPageCo
 }
 
 ipc::IPCResult
-PPAPIJSPluginParent::RecvPrintEMF(const uint16_t& aID, const nsString& aFilePath, const int& aPageNum)
+PPAPIJSPluginParent::RecvPrintEMF(const uint16_t& aID, const nsString& aFilePath,
+                                  const int& aPageNum, const float& aScaleFactor)
 {
 #ifdef XP_WIN
   printf("---RecvPrintEMF:  %d---\n", aPageNum);
-  sDeviceContextSpec[aID]->PrintEMF(aID, aFilePath);
+  sDeviceContextSpec[aID]->PrintEMF(aID, aFilePath, aScaleFactor);
 #endif
   return IPC_OK();
 }

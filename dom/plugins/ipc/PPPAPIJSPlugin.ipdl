@@ -13,7 +13,7 @@ sync protocol PPPAPIJSPlugin
 parent:
 
   async NotifyPageCount(uint16_t aID, int aPageCount);
-  async PrintEMF(uint16_t aID, nsString aFilePath, int aPageNum);
+  async PrintEMF(uint16_t aID, nsString aFilePath, int aPageNum, float aScaleFactor);
 
 child:
   async Bridged(Endpoint<PPPAPIJSChild> endpoint);

@@ -180,7 +180,6 @@ dump("file path = " + file.path + "\n");
   }
 dump("\n\n\nFarmer printPDF\n\n\n");
   webBrowserPrint.printPDF(file.path)
-  //webBrowserPrint.printPDF("C:\\Users\\Farmer Tseng\\Documents\\yahoo.pdf")
   .then(() => {
     //file.remove(false);
   })

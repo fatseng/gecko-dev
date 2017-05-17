@@ -99,6 +99,7 @@ nsDeviceContextSpecWin::nsDeviceContextSpecWin()
   mRemotePrintJobParent = nullptr;
   mJSParent      = nullptr;
   mPDFPageCount  = 0;
+  mScaleFactor   = 1.0;
 }
 
 
@@ -295,8 +296,16 @@ nsDeviceContextSpecWin::PDFPrintjob()
       ::EndPage(mDC);
       return;
     }
-    RECT printRect = {0, 0, pageWidth, pageHeight};
-    bresult = emf.Playback(mDC, &printRect);
+    int savedState =::SaveDC(mDC);
+    ::SetGraphicsMode(mDC, GM_ADVANCED);
+    XFORM printxform = { 0 };
+    printxform.eDx = 0;
+    printxform.eDy = 0;
+    printxform.eM11 = printxform.eM22 = 1.f / mScaleFactor;
+    bresult = ::ModifyWorldTransform(mDC, &printxform, MWT_LEFTMULTIPLY);
+
+    bresult = emf.Playback(mDC);
+    bresult = ::RestoreDC(mDC, savedState);
     ::EndPage(mDC);
   }
 
@@ -386,9 +395,11 @@ nsDeviceContextSpecWin::SetPDFPageCount(const uint16_t aID, int aPageCount)
 
 void
 nsDeviceContextSpecWin::PrintEMF(const uint16_t aID,
-                                 const nsString& aEMFFilePath)
+                                 const nsString& aEMFFilePath,
+                                 const float aScaleFactor)
 {
   mEMFFilePath.Assign(aEMFFilePath);
+  mScaleFactor = aScaleFactor;
   NS_DispatchToCurrentThread(
     NewRunnableMethod(this, &nsDeviceContextSpecWin::PDFPrintjob));
 }

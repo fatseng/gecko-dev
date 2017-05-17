@@ -244,7 +244,7 @@ PPAPIJSPluginChild::RecvConvertPDFToEMF(const uint16_t& aID,
   mPDFPrintHelper->DrawPageToFile(aID, EMFFilePath.get(), aPageNum,
                                   aPageWidth, aPageHeight, scaleFactor);
 
-  Unused << SendPrintEMF(aID, EMFFilePath, aPageNum);
+  Unused << SendPrintEMF(aID, EMFFilePath, aPageNum, scaleFactor);
 
 #endif
   return IPC_OK();
