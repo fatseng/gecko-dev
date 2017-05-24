@@ -81,6 +81,7 @@ bool GetSubFontName(CFX_ByteString* name) {
 
 bool IsGDIEnabled() {
   // If GDI is disabled then GetDC for the desktop will fail.
+  return false;
   HDC hdc = ::GetDC(nullptr);
   if (!hdc)
     return false;
